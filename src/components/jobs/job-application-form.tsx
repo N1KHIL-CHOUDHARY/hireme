@@ -11,24 +11,8 @@ import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { localsLanguages } from '@/i18n/config';
 import { processFileForStorage } from '@/lib/file-utils';
 import { IJob } from '@/models/job';
 
@@ -38,10 +22,9 @@ const formSchema = z.object({
   fileName: z.string().optional(),
   s3Key: z.string().optional(),
   s3Bucket: z.string().optional(),
-  preferredLanguage: z.string().min(1, {
-    message: 'Please select your preferred language.',
-  }),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface JobApplicationFormProps {
   jobId: string;
@@ -61,11 +44,14 @@ export function JobApplicationForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       resumeUrl: '',
-      preferredLanguage: 'en',
+      resumeBase64: '',
+      fileName: '',
+      s3Key: '',
+      s3Bucket: '',
     },
   });
 
@@ -126,7 +112,7 @@ export function JobApplicationForm({
 
   const { data: session } = useSession();
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
 
     // Check if user is logged in
@@ -148,22 +134,16 @@ export function JobApplicationForm({
     }
 
     try {
-      // Log job and jobId for debugging
-      console.log('Job object:', job);
-      console.log('JobId prop:', job.id);
-
-      // Prepare application data - Use the URL ID which is what's used in the database as jobId
+      // Prepare application data - Always defaults to English
       const applicationData = {
         jobId: job._id || job.id,
         userId: session?.user?.id || '',
-        // Candidatename and email are now optional in the model
         resumeUrl: values.resumeUrl,
         resumeBase64: values.resumeBase64,
         fileName: values.fileName,
-        // Include S3 key and bucket for generating signed URLs later
         s3Key: values.s3Key,
         s3Bucket: values.s3Bucket,
-        preferredLanguage: values.preferredLanguage,
+        preferredLanguage: 'en',
       };
 
       // Submit to API
@@ -185,10 +165,7 @@ export function JobApplicationForm({
         description: 'Your resume will now be analyzed.',
       });
 
-      // Get the application ID from the response
       const applicationId = result.application._id;
-
-      // Either call the success callback or redirect
       onSubmitSuccess?.(applicationId);
     } catch (error) {
       console.error('Application submission error:', error);
@@ -204,52 +181,52 @@ export function JobApplicationForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
-          <div className="border rounded-md p-4 bg-muted/20">
-            <h2 className="text-lg font-medium mb-2">{job.title}</h2>
-            <p className="text-muted-foreground">{job.companyName}</p>
+          <div className="border border-border rounded-md p-4 bg-slate-50/50">
+            <h2 className="text-base font-semibold text-slate-900 mb-1">{job.title}</h2>
+            <p className="text-sm text-slate-500">{job.companyName}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="resume">Resume/CV (PDF only)</Label>
+            <Label htmlFor="resume" className="text-xs font-semibold text-slate-700">
+              Resume / CV (PDF only)
+            </Label>
             {!fileName ? (
               <div
                 {...getRootProps()}
                 className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors ${
                   isDragActive
-                    ? 'border-primary bg-primary/5'
-                    : 'border-gray-300 hover:border-primary/50'
+                    ? 'border-primary bg-blue-50/50'
+                    : 'border-slate-300 hover:border-primary/50'
                 }`}
               >
                 <input {...getInputProps()} />
                 {isUploading ? (
                   <div className="flex flex-col items-center">
-                    <Loader2 className="h-10 w-10 animate-spin text-primary mb-2" />
-                    <p>Uploading...</p>
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                    <p className="text-sm text-slate-600">Uploading...</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center">
-                    <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm font-medium">
-                      Drag & drop your resume PDF here, or click to select
+                    <Upload className="h-8 w-8 text-slate-400 mb-2" />
+                    <p className="text-sm font-medium text-slate-800">
+                      Drag & drop your resume PDF here, or click to browse
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Only PDF files accepted (max 5MB)
-                    </p>
+                    <p className="text-xs text-slate-400 mt-1">PDF format (max 5MB)</p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 border rounded-md p-3">
-                <FileIcon className="h-8 w-8 text-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium truncate">{fileName}</p>
-                  <p className="text-xs text-muted-foreground">PDF Document</p>
+              <div className="flex items-center gap-2 border border-border rounded-md p-3 bg-white">
+                <FileIcon className="h-6 w-6 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{fileName}</p>
+                  <p className="text-xs text-slate-400">PDF Document</p>
                 </div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 text-slate-500 hover:text-slate-900"
                   onClick={removeFile}
                   disabled={isUploading}
                 >
@@ -259,39 +236,9 @@ export function JobApplicationForm({
               </div>
             )}
           </div>
-
-          <FormField
-            control={form.control}
-            name="preferredLanguage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preferred Language</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your preferred language" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {localsLanguages
-                      .filter((lang) => lang.active)
-                      .map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.flag} {lang.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Select the language you prefer for communications.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end space-x-2 pt-2 border-t border-border">
           <Button
             type="button"
             variant="outline"
@@ -309,7 +256,7 @@ export function JobApplicationForm({
           <Button type="submit" disabled={isSubmitting || isUploading}>
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                 Submitting...
               </>
             ) : (

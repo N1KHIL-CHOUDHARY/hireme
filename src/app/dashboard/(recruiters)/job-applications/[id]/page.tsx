@@ -11,7 +11,6 @@ import {
   Download,
   Eye,
   FileText,
-  Globe,
   Maximize2,
   MessageSquare,
   Sparkles,
@@ -473,7 +472,7 @@ export default function JobApplicationDetailsPage() {
         <CardContent className="p-5 sm:p-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             {/* Left Metadata Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8 flex-1 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 flex-1 text-sm">
               <div className="space-y-1">
                 <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                   <FileText className="size-3.5 text-slate-400" />
@@ -484,16 +483,6 @@ export default function JobApplicationDetailsPage() {
                   title={application.fileName}
                 >
                   {application.fileName}
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                  <Globe className="size-3.5 text-slate-400" />
-                  Preferred Language
-                </span>
-                <p className="font-medium text-slate-900 capitalize">
-                  {application.preferredLanguage || 'English'}
                 </p>
               </div>
 
