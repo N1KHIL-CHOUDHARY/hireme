@@ -11,51 +11,40 @@ import { AnimatedAuthCard } from '@/components/ui/auth-card';
 
 export default function CandidateLoginPage() {
   const t = useTranslations('Auth');
-  // Get redirect parameter from URL if present
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
 
-  // Create footer content with animations
   const footerContent = (
-    <>
+    <div className="flex flex-col space-y-1.5 text-center text-xs text-slate-500">
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="text-sm text-muted-foreground text-center"
+        transition={{ duration: 0.18 }}
       >
         {t('noAccount')}{' '}
-        <Link
-          href="/register/candidate"
-          className="text-primary underline underline-offset-4 hover:text-primary/90"
-        >
+        <Link href="/register/candidate" className="font-medium text-primary hover:underline">
           {t('registerAs.candidate')}
         </Link>
       </motion.div>
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="text-sm text-muted-foreground text-center"
+        transition={{ duration: 0.18, delay: 0.04 }}
       >
         {t('notCandidate')}{' '}
-        <Link
-          href="/login/recruiter"
-          className="text-primary underline underline-offset-4 hover:text-primary/90"
-        >
+        <Link href="/login/recruiter" className="font-medium text-primary hover:underline">
           {t('loginAs.recruiter')}
         </Link>
       </motion.div>
-    </>
+    </div>
   );
 
   return (
-    <AnimatedBackground patternColor="primary" colorScheme="blue">
+    <AnimatedBackground>
       <div className="w-full max-w-md px-4">
         <AnimatedAuthCard
           title={t('candidateLogin.title')}
           description={t('candidateLoginDescription')}
-          colorScheme="blue"
           footer={footerContent}
         >
           <LoginForm role="candidate" callbackUrl={redirectUrl || undefined} />
