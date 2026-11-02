@@ -1,5 +1,6 @@
-import { ArrowLeftIcon, BriefcaseIcon, CalendarIcon, MapPinIcon } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, MapPin } from 'lucide-react';
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
@@ -9,9 +10,10 @@ import remarkGfm from 'remark-gfm';
 import { getJobByUrlId } from '@/actions/jobs';
 import { ClientShareButton } from '@/components/jobs/client-share-button';
 import { JobApplyRedirectButton } from '@/components/jobs/job-apply-redirect-button';
-import { AnimatedBackground } from '@/components/ui/animated-background';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { getCountryLabel } from '@/data/countries';
 import { getSkillLabel } from '@/data/technical-skills';
 
@@ -48,51 +50,97 @@ export default async function JobDetailsPage(props: Props) {
     notFound();
   }
 
-  // Format dates
   const expiryDate = new Date(job.expiryDate).toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
   const postedDate = new Date(job.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
-  // Check if job is expired
   const isExpired = new Date(job.expiryDate) < new Date();
 
   return (
-    <AnimatedBackground patternColor="primary" colorScheme="blue" className="min-h-screen">
-      <div className="container px-4 py-8 mx-auto">
-        <Link href="/jobs" className="inline-flex items-center text-sm mb-6 hover:underline">
-          <ArrowLeftIcon className="h-4 w-4 mr-1" /> Back to jobs
-        </Link>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Top Header */}
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/images/hirelytics-logo.svg"
+              alt="Hirelytics"
+              width={28}
+              height={28}
+              className="h-7 w-7"
+            />
+            <span className="text-base font-semibold tracking-tight text-slate-900">
+              Hirelytics
+            </span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Sign in
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Create account</Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 sm:px-6">
+        <div className="mb-6">
+          <Link
+            href="/jobs"
+            className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back to jobs
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main content */}
-          <div className="lg:col-span-2">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold tracking-tight mb-2">{job.title}</h1>
-              <div className="flex items-center text-lg text-muted-foreground">
-                <BriefcaseIcon className="h-5 w-5 mr-1" />
-                <span className="font-medium">{job.companyName}</span>
+          <div className="lg:col-span-2 space-y-6">
+            <div className="border border-slate-200 bg-white rounded-lg p-6 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
+                    {job.title}
+                  </h1>
+                  <div className="mt-1.5 flex items-center gap-2 text-sm text-slate-600 font-medium">
+                    <Building2 className="h-4 w-4 text-slate-400" />
+                    <span>{job.companyName}</span>
+                    <span className="text-slate-300">•</span>
+                    <MapPin className="h-4 w-4 text-slate-400" />
+                    <span>{getCountryLabel(job.location)}</span>
+                  </div>
+                </div>
+                <div>
+                  {isExpired ? (
+                    <StatusBadge status="expired" />
+                  ) : job.isActive ? (
+                    <StatusBadge status="active" />
+                  ) : (
+                    <StatusBadge status="inactive" />
+                  )}
+                </div>
               </div>
-              {isExpired && (
-                <Badge variant="destructive" className="mt-2">
-                  Expired
-                </Badge>
-              )}
             </div>
 
-            <Card className="mb-6 bg-background/70 backdrop-blur-sm">
-              <CardHeader>
-                <h2 className="text-xl font-semibold">Job Description</h2>
+            <Card className="border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <CardHeader className="pb-3 border-b border-slate-100">
+                <CardTitle className="text-lg font-semibold text-slate-900">
+                  Job Description
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-primary">
+              <CardContent className="pt-4">
+                <div className="prose max-w-none text-sm text-slate-700 leading-relaxed prose-headings:text-slate-900 prose-headings:font-semibold prose-a:text-primary hover:prose-a:underline">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
@@ -108,7 +156,7 @@ export default async function JobDetailsPage(props: Props) {
                       code: (props) => (
                         <code
                           {...props}
-                          className="bg-muted px-1 py-0.5 rounded text-sm font-mono"
+                          className="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono text-slate-800"
                         />
                       ),
                     }}
@@ -120,12 +168,14 @@ export default async function JobDetailsPage(props: Props) {
             </Card>
 
             {job.requirements && (
-              <Card className="mb-6 bg-background/70 backdrop-blur-sm">
-                <CardHeader>
-                  <h2 className="text-xl font-semibold">Requirements</h2>
+              <Card className="border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+                <CardHeader className="pb-3 border-b border-slate-100">
+                  <CardTitle className="text-lg font-semibold text-slate-900">
+                    Requirements
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-primary">
+                <CardContent className="pt-4">
+                  <div className="prose max-w-none text-sm text-slate-700 leading-relaxed prose-headings:text-slate-900 prose-headings:font-semibold prose-a:text-primary">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                       {job.requirements}
                     </ReactMarkdown>
@@ -135,12 +185,14 @@ export default async function JobDetailsPage(props: Props) {
             )}
 
             {job.benefits && (
-              <Card className="mb-6 bg-background/70 backdrop-blur-sm">
-                <CardHeader>
-                  <h2 className="text-xl font-semibold">Benefits</h2>
+              <Card className="border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+                <CardHeader className="pb-3 border-b border-slate-100">
+                  <CardTitle className="text-lg font-semibold text-slate-900">
+                    Benefits & Perks
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-primary">
+                <CardContent className="pt-4">
+                  <div className="prose max-w-none text-sm text-slate-700 leading-relaxed prose-headings:text-slate-900 prose-headings:font-semibold prose-a:text-primary">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                       {job.benefits}
                     </ReactMarkdown>
@@ -152,50 +204,73 @@ export default async function JobDetailsPage(props: Props) {
 
           {/* Sidebar */}
           <div>
-            <Card className="mb-6 sticky top-6 bg-background/70 backdrop-blur-sm">
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  <MapPinIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>{getCountryLabel(job.location)}</span>
+            <Card className="sticky top-20 border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <CardHeader className="pb-3 border-b border-slate-100">
+                <CardTitle className="text-base font-semibold text-slate-900">
+                  Job Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-4">
+                <div className="flex items-center gap-2.5 text-sm">
+                  <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+                  <div>
+                    <span className="text-slate-500 text-xs block">Location</span>
+                    <span className="font-medium text-slate-900">
+                      {getCountryLabel(job.location)}
+                    </span>
+                  </div>
                 </div>
 
                 {job.salary && (
-                  <div className="flex items-center mb-4">
-                    <span className="font-medium mr-2">Salary:</span>
-                    <span>{job.salary}</span>
+                  <div className="flex items-center gap-2.5 text-sm">
+                    <div className="h-4 w-4 flex items-center justify-center text-xs font-mono font-semibold text-slate-400 shrink-0">
+                      $
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-xs block">Salary</span>
+                      <span className="font-mono tabular-nums font-medium text-slate-900">
+                        {job.salary}
+                      </span>
+                    </div>
                   </div>
                 )}
 
-                <div className="flex items-center mb-4">
-                  <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                <div className="flex items-center gap-2.5 text-sm">
+                  <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
                   <div>
-                    <div>
-                      <span className="font-medium">Posted:</span> {postedDate}
+                    <span className="text-slate-500 text-xs block">Timeline</span>
+                    <div className="text-xs text-slate-600 font-mono tabular-nums">
+                      Posted: <span className="font-medium text-slate-900">{postedDate}</span>
                     </div>
-                    <div>
-                      <span className="font-medium">Expires:</span> {expiryDate}
+                    <div className="text-xs text-slate-600 font-mono tabular-nums">
+                      Expires: <span className="font-medium text-slate-900">{expiryDate}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h3 className="font-medium mb-2">Required Skills</h3>
-                  <div className="flex flex-wrap gap-2">
+                <div className="pt-2 border-t border-slate-100">
+                  <span className="text-slate-500 text-xs font-medium block mb-2">
+                    Required Skills
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
                     {job.skills.map((skill: string) => (
-                      <Badge key={skill} variant="secondary">
+                      <Badge
+                        key={skill}
+                        variant="secondary"
+                        className="bg-slate-100 text-slate-700 border-slate-200/60 font-medium text-xs rounded-md"
+                      >
                         {getSkillLabel(skill)}
                       </Badge>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="pt-4 border-t border-slate-100 space-y-2">
                   <JobApplyRedirectButton
                     jobId={params.id}
                     isExpired={isExpired}
                     isActive={job.isActive}
                   />
-                  {/* Using a client component wrapper */}
                   <ClientShareButton
                     jobId={params.id}
                     jobTitle={job.title}
@@ -206,7 +281,7 @@ export default async function JobDetailsPage(props: Props) {
             </Card>
           </div>
         </div>
-      </div>
-    </AnimatedBackground>
+      </main>
+    </div>
   );
 }
