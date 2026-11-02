@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/ui/status-badge';
 
 interface JobApplyRedirectButtonProps {
   jobId: string;
@@ -38,10 +38,8 @@ export function JobApplyRedirectButton({
   // If job is expired, show only the expired badge for all users
   if (isExpired) {
     return (
-      <div className={variant === 'default' ? 'w-full text-center' : ''}>
-        <Badge variant="destructive" className={variant === 'small' ? 'text-xs px-2' : 'px-3 py-1'}>
-          Job Expired
-        </Badge>
+      <div className={variant === 'default' ? 'w-full flex justify-center py-1' : ''}>
+        <StatusBadge status="expired" />
       </div>
     );
   }
