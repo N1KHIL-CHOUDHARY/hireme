@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 
+import { auth } from '@/auth';
 import { AppSidebar } from '@/components/app-sidebar';
+import { CandidateNavbar } from '@/components/candidate-navbar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
@@ -9,8 +11,23 @@ interface DashboardLayoutProps {
 }
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+  const session = await auth();
+  const isCandidate = session?.user?.role === 'candidate';
+
+  // Candidate experience uses top navigation bar without sidebar
+  if (isCandidate) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+        <CandidateNavbar user={session?.user} />
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // Recruiter and admin experience preserves sidebar layout
   const cookieStore = await cookies();
-  // Default to false if no cookie exists, otherwise use the cookie value
   const defaultOpen = cookieStore.get('sidebar_state')?.value === 'true';
 
   return (
@@ -28,14 +45,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
-              {/* <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
-              <DataTable data={data} /> */}
-              {children}
-            </div>
+            <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">{children}</div>
           </div>
         </div>
       </SidebarInset>

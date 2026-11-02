@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Edit, Eye, Link as LinkIcon, Plus, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { JobFormDialog } from '@/components/jobs/job-form-dialog';
@@ -35,13 +35,22 @@ interface Job {
 }
 
 export default function JobsPage() {
-  const t = useTranslations('Dashboard');
+  const searchParams = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [selectedJobId, setSelectedJobId] = useState<string | undefined>();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery] = useState('');
+
+  // Auto-open creation dialog if action=new is present
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setDialogMode('create');
+      setSelectedJobId(undefined);
+      setIsDialogOpen(true);
+    }
+  }, [searchParams]);
 
   // Fetch jobs with pagination and search
   const { data, refetch, isLoading } = useQuery({
@@ -106,26 +115,19 @@ export default function JobsPage() {
       accessorKey: 'location',
       header: 'Location',
       cell: ({ row }) => {
-        const location = row.getValue('location') as string;
-        return <span className="text-xs text-slate-600">{getCountryLabel(location)}</span>;
+        const countryCode = row.getValue('location') as string;
+        return <span className="text-slate-600 text-sm">{getCountryLabel(countryCode)}</span>;
       },
     },
     {
       accessorKey: 'expiryDate',
-      header: 'Expires On',
+      header: 'Expires',
       cell: ({ row }) => {
-        const rawDate = row.getValue('expiryDate');
-        if (!rawDate) return <span className="text-xs text-slate-400">No date</span>;
-        const date = new Date(rawDate as string);
-        const isExpired = date < new Date();
-
+        const date = new Date(row.getValue('expiryDate'));
         return (
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs tabular-nums text-slate-600">
-              {format(date, 'MMM dd, yyyy')}
-            </span>
-            {isExpired && <StatusBadge status="expired" size="sm" />}
-          </div>
+          <span className="font-mono text-xs tabular-nums text-slate-600">
+            {format(date, 'MMM dd, yyyy')}
+          </span>
         );
       },
     },
@@ -134,60 +136,96 @@ export default function JobsPage() {
       header: 'Status',
       cell: ({ row }) => {
         const isActive = row.getValue('isActive') as boolean;
+        const expiryDate = new Date(row.getValue('expiryDate'));
+        const isExpired = expiryDate < new Date();
+
+        if (isExpired) {
+          return <StatusBadge status="expired" />;
+        }
+
         return <StatusBadge status={isActive ? 'active' : 'inactive'} />;
       },
     },
     {
       id: 'actions',
-      header: () => <span className="sr-only">Actions</span>,
+      header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => {
         const job = row.original;
-        const jobUrl = `/jobs/${job.urlId}`;
+
+        const handleCopyLink = () => {
+          const url = `${window.location.origin}/jobs/${job.urlId}`;
+          navigator.clipboard.writeText(url);
+          toast.success('Job link copied to clipboard');
+        };
+
+        const handleEdit = () => {
+          setSelectedJobId(job.id);
+          setDialogMode('edit');
+          setIsDialogOpen(true);
+        };
+
+        const handleDelete = async () => {
+          if (confirm('Are you sure you want to delete this job?')) {
+            try {
+              const response = await fetch(`/api/jobs/${job.id}`, {
+                method: 'DELETE',
+              });
+
+              if (!response.ok) {
+                throw new Error('Failed to delete job');
+              }
+
+              toast.success('Job deleted successfully');
+              refetch();
+            } catch {
+              toast.error('Failed to delete job');
+            }
+          }
+        };
 
         return (
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex justify-end gap-1">
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 text-slate-500 hover:text-primary hover:bg-blue-50"
-              onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/jobs/${job.urlId}`);
-                toast.success('Job application link copied');
-              }}
-              title="Copy job URL"
+              onClick={handleCopyLink}
+              title="Copy public link"
+              className="h-8 w-8 text-slate-500 hover:text-slate-900"
             >
               <LinkIcon className="size-4" />
+              <span className="sr-only">Copy Link</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-              onClick={() => window.open(jobUrl, '_blank')}
-              title="View public job posting"
+              asChild
+              title="View public job"
+              className="h-8 w-8 text-slate-500 hover:text-slate-900"
             >
-              <Eye className="size-4" />
+              <a href={`/jobs/${job.urlId}`} target="_blank" rel="noopener noreferrer">
+                <Eye className="size-4" />
+                <span className="sr-only">View</span>
+              </a>
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 text-slate-500 hover:text-primary hover:bg-blue-50"
+              onClick={handleEdit}
               title="Edit job"
-              onClick={() => {
-                setSelectedJobId(job.id);
-                setDialogMode('edit');
-                setIsDialogOpen(true);
-              }}
+              className="h-8 w-8 text-slate-500 hover:text-slate-900"
             >
               <Edit className="size-4" />
+              <span className="sr-only">Edit</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 text-slate-500 hover:text-destructive hover:bg-red-50"
+              onClick={handleDelete}
               title="Delete job"
-              onClick={() => handleDeleteJob(job.id)}
+              className="h-8 w-8 text-slate-500 hover:text-red-600"
             >
               <Trash2 className="size-4" />
+              <span className="sr-only">Delete</span>
             </Button>
           </div>
         );
@@ -195,41 +233,15 @@ export default function JobsPage() {
     },
   ];
 
-  // Handle job deletion
-  const handleDeleteJob = async (jobId: string) => {
-    if (!confirm('Are you sure you want to delete this job listing?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/jobs/${jobId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete job');
-      }
-
-      refetch();
-      toast.success('Job deleted successfully');
-    } catch (error: Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      toast.error(errorMessage);
-    }
-  };
-
-  // Handle job creation success
   const handleJobCreated = () => {
     refetch();
-    setIsDialogOpen(false);
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('jobManagement') || 'Job Listings'}
-        description={t('manageJobs') || 'Create, update, and manage your job openings.'}
+        title="My Jobs"
+        description="Review, update, and manage job openings published by your organization"
         actions={
           <Button
             onClick={() => {
@@ -239,7 +251,7 @@ export default function JobsPage() {
             }}
           >
             <Plus className="mr-1.5 size-4" />
-            Create Job
+            Post a Job
           </Button>
         }
       />
