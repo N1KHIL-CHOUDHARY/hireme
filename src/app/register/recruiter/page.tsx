@@ -16,26 +16,23 @@ export default function RecruiterRegisterPage() {
   const registrationEnabled = config.registrationEnabled;
   const router = useRouter();
 
-  // If registration is disabled, redirect directly to the wishlist page
   useEffect(() => {
     if (!registrationEnabled) {
       router.push('/wishlist');
     }
   }, [registrationEnabled, router]);
 
-  // If registration is disabled, show loading state while redirecting
   if (!registrationEnabled) {
     return (
-      <AnimatedBackground patternColor="primary" colorScheme="indigo">
+      <AnimatedBackground>
         <div className="w-full max-w-md px-4">
           <AnimatedAuthCard
             title={t('redirecting')}
             description={t('redirectingToWaitlist')}
-            colorScheme="indigo"
             contentClassName="flex flex-col space-y-4 items-center justify-center"
           >
-            <div className="py-4">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            <div className="py-6">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
             </div>
           </AnimatedAuthCard>
         </div>
@@ -43,47 +40,37 @@ export default function RecruiterRegisterPage() {
     );
   }
 
-  // Create footer content with animations
   const footerContent = (
-    <>
+    <div className="flex flex-col space-y-1.5 text-center text-xs text-slate-500">
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="text-sm text-muted-foreground text-center"
+        transition={{ duration: 0.18 }}
       >
         {t('hasAccount')}{' '}
-        <Link
-          href="/login/recruiter"
-          className="text-primary underline underline-offset-4 hover:text-primary/90"
-        >
+        <Link href="/login/recruiter" className="font-medium text-primary hover:underline">
           {t('loginAs.recruiter')}
         </Link>
       </motion.div>
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="text-sm text-muted-foreground text-center"
+        transition={{ duration: 0.18, delay: 0.04 }}
       >
         {t('notRecruiter')}{' '}
-        <Link
-          href="/register/candidate"
-          className="text-primary underline underline-offset-4 hover:text-primary/90"
-        >
+        <Link href="/register/candidate" className="font-medium text-primary hover:underline">
           {t('registerAs.candidate')}
         </Link>
       </motion.div>
-    </>
+    </div>
   );
 
   return (
-    <AnimatedBackground patternColor="primary" colorScheme="purple">
+    <AnimatedBackground>
       <div className="w-full max-w-md px-4">
         <AnimatedAuthCard
           title={t('recruiterRegistration.title')}
           description={t('recruiterRegistration.description')}
-          colorScheme="purple"
           footer={footerContent}
         >
           <RegisterForm role="recruiter" />
