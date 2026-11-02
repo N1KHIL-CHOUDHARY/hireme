@@ -2,10 +2,10 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getJobById } from '@/actions/jobs';
-import { AIInterviewBackground } from '@/components/interview/ai-interview-background';
 import { InterviewCompletion } from '@/components/interview/interview-completion';
 import { InterviewSession } from '@/components/interview/interview-session';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { connectToDatabase } from '@/lib/database';
 import { JobApplication } from '@/models/job-application';
 
@@ -54,8 +54,6 @@ export default async function InterviewSessionPage(props: Props) {
       notFound();
     }
 
-    console.log(application.jobId);
-
     const job = await getJobById(application.jobId);
 
     if (!job) {
@@ -65,14 +63,15 @@ export default async function InterviewSessionPage(props: Props) {
     // Check if interview duration is missing
     if (!job.interviewDuration) {
       return (
-        <div className="container px-4 py-8 mx-auto">
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
-                Interview configuration is incomplete. Please contact the recruiter.
-              </p>
-            </CardContent>
-          </Card>
+        <div className="py-12 max-w-xl mx-auto">
+          <EmptyState
+            title="Configuration Incomplete"
+            description="Interview duration has not been configured. Please contact the recruiter."
+            action={{
+              label: 'Return to Dashboard',
+              href: '/dashboard',
+            }}
+          />
         </div>
       );
     }
@@ -80,58 +79,48 @@ export default async function InterviewSessionPage(props: Props) {
     // Check if interview is already completed
     const interviewState = application.interviewState;
     if (interviewState?.currentPhase === 'completed') {
-      // Redirect to feedback page
       return (
-        <div className="container px-4 py-4 mx-auto relative">
-          <div className="absolute inset-0 -z-10">
-            <AIInterviewBackground className="opacity-30" />
-          </div>
-
-          <div className="mx-auto relative z-10">
-            <Card className="mb-2 border-border/60 shadow-lg">
-              <CardHeader className="py-3">
-                <h1 className="text-xl font-bold">{job.title} - Interview Complete</h1>
-                <p className="text-sm text-muted-foreground">Your interview is already completed</p>
-              </CardHeader>
-              <CardContent className="p-4">
-                <InterviewCompletion
-                  applicationId={applicationId}
-                  jobTitle={job.title}
-                  companyName={job.companyName}
-                  redirectUrl={`/dashboard/applications/${applicationId}/feedback`}
-                />
-              </CardContent>
-            </Card>
-          </div>
+        <div className="py-8 max-w-2xl mx-auto">
+          <Card className="border-slate-200 bg-white shadow-sm">
+            <CardHeader className="py-4 border-b border-slate-100">
+              <CardTitle className="text-xl font-bold tracking-tight text-slate-900">
+                {job.title} - Interview Complete
+              </CardTitle>
+              <p className="text-xs text-slate-500">Your interview is already completed</p>
+            </CardHeader>
+            <CardContent className="p-4">
+              <InterviewCompletion
+                applicationId={applicationId}
+                jobTitle={job.title}
+                companyName={job.companyName}
+                redirectUrl={`/dashboard/applications/${applicationId}/feedback`}
+              />
+            </CardContent>
+          </Card>
         </div>
       );
     }
 
     return (
-      <div className="container mx-auto relative">
-        {/* Apply a subtle background for the entire page */}
-        <div className="absolute inset-0 -z-10">
-          <AIInterviewBackground className="opacity-30" />
-        </div>
-
-        <div className="mx-auto relative z-10">
-          <Card className="border-border/60 shadow-lg">
-            <CardHeader>
-              <h1 className="text-xl font-bold">{job.title} - Live Interview</h1>
-              <p className="text-sm text-muted-foreground">
-                AI Interview session for {job.companyName}
-              </p>
-            </CardHeader>
-            <CardContent className="p-1">
-              <InterviewSession
-                applicationId={applicationId}
-                jobTitle={job.title}
-                companyName={job.companyName}
-                interviewDuration={job.interviewDuration}
-              />
-            </CardContent>
-          </Card>
-        </div>
+      <div className="space-y-4">
+        <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
+          <CardHeader className="py-3 px-4 border-b border-slate-100 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold text-slate-900">
+                {job.title} - Virtual Interview
+              </CardTitle>
+              <p className="text-xs text-slate-500">Live AI session for {job.companyName}</p>
+            </div>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-4">
+            <InterviewSession
+              applicationId={applicationId}
+              jobTitle={job.title}
+              companyName={job.companyName}
+              interviewDuration={job.interviewDuration}
+            />
+          </CardContent>
+        </Card>
       </div>
     );
   } catch (error) {
