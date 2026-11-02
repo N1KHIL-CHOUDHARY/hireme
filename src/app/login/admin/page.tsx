@@ -8,38 +8,30 @@ import { AnimatedBackground } from '@/components/ui/animated-background';
 import { AnimatedAuthCard } from '@/components/ui/auth-card';
 
 export default function AdminLoginPage() {
-  // Create footer content with animations
   const footerContent = (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="text-sm text-muted-foreground text-center"
+      transition={{ duration: 0.18 }}
+      className="text-center text-xs text-slate-500"
     >
       Not an admin? Login as a{' '}
-      <Link
-        href="/login/recruiter"
-        className="text-primary underline underline-offset-4 hover:text-primary/90"
-      >
+      <Link href="/login/recruiter" className="font-medium text-primary hover:underline">
         recruiter
       </Link>{' '}
       or{' '}
-      <Link
-        href="/login/candidate"
-        className="text-primary underline underline-offset-4 hover:text-primary/90"
-      >
+      <Link href="/login/candidate" className="font-medium text-primary hover:underline">
         candidate
       </Link>
     </motion.div>
   );
 
   return (
-    <AnimatedBackground patternColor="primary" colorScheme="cyan">
+    <AnimatedBackground>
       <div className="w-full max-w-md px-4">
         <AnimatedAuthCard
           title="Admin Login"
-          description="Enter your credentials to access the admin dashboard"
-          colorScheme="cyan"
+          description="Enter your credentials to access the admin portal"
           footer={footerContent}
         >
           <LoginForm role="admin" />
