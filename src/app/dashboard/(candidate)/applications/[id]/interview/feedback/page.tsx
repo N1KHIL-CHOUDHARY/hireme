@@ -1,14 +1,14 @@
-import { CircleCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getJobById } from '@/actions/jobs';
-import { AIInterviewBackground } from '@/components/interview/ai-interview-background';
 import { AutoGenerateFeedbackEnhanced } from '@/components/interview/auto-generate-feedback-enhanced';
 import { FeedbackContent } from '@/components/interview/feedback-content';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { connectToDatabase } from '@/lib/database';
 import { JobApplication } from '@/models/job-application';
 
@@ -18,7 +18,7 @@ type Props = {
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: `Interview Feedback | Hirelytics`,
+    title: 'Interview Feedback | Hirelytics',
   };
 }
 
@@ -43,20 +43,15 @@ export default async function InterviewFeedbackPage(props: Props) {
     const interviewState = application.interviewState;
     if (!interviewState || interviewState.currentPhase !== 'completed') {
       return (
-        <div className="container mx-auto max-w-4xl py-12">
-          <Card>
-            <CardHeader>
-              <h1 className="text-2xl font-bold">Interview Not Completed</h1>
-              <p className="text-muted-foreground">
-                You need to complete the interview before viewing feedback.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Link href={`/dashboard/applications/${applicationId}/interview`}>
-                <Button>Go to Interview</Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <div className="py-12 max-w-xl mx-auto">
+          <EmptyState
+            title="Interview Not Completed"
+            description="You need to complete the virtual interview before viewing feedback."
+            action={{
+              label: 'Go to Virtual Interview',
+              href: `/dashboard/applications/${applicationId}/interview`,
+            }}
+          />
         </div>
       );
     }
@@ -66,31 +61,30 @@ export default async function InterviewFeedbackPage(props: Props) {
 
     if (!hasEvaluation) {
       return (
-        <div className="container mx-auto max-w-4xl py-12">
-          <Card>
-            <CardHeader>
-              <h1 className="text-2xl font-bold">Feedback Processing</h1>
-              <p className="text-muted-foreground">
-                Your interview responses are being analyzed. This may take a moment.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <AutoGenerateFeedbackEnhanced applicationId={applicationId} />
-                <div className="flex justify-center">
-                  <Link href="/dashboard">
-                    <Button>Return to Dashboard</Button>
-                  </Link>
-                </div>
+        <div className="py-12 max-w-xl mx-auto">
+          <Card className="border-slate-200 bg-white shadow-sm text-center p-8 space-y-4">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+              Evaluation In Progress
+            </h1>
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+              Your interview responses are being analyzed by our AI system. This usually takes less
+              than a minute.
+            </p>
+            <div className="pt-2 space-y-4">
+              <AutoGenerateFeedbackEnhanced applicationId={applicationId} />
+              <div>
+                <Link href="/dashboard">
+                  <Button variant="outline" size="sm">
+                    Return to Dashboard
+                  </Button>
+                </Link>
               </div>
-            </CardContent>
+            </div>
           </Card>
         </div>
       );
     }
 
-    // Serialize the feedback data to plain JavaScript objects
-    // to avoid passing complex database objects to client components
     const serializedFeedback = {
       technicalSkills: feedback.technicalSkills || 0,
       communicationSkills: feedback.communicationSkills || 0,
@@ -104,52 +98,49 @@ export default async function InterviewFeedbackPage(props: Props) {
     };
 
     return (
-      <div className="container px-4 py-8 mx-auto relative">
-        {/* Apply a subtle background for the entire page */}
-        <div className="absolute inset-0 -z-10">
-          <AIInterviewBackground className="opacity-25" />
-        </div>
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <Link
+          href={`/dashboard/applications/${applicationId}`}
+          className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to application details
+        </Link>
 
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-              <CircleCheck className="h-10 w-10 text-green-600" />
-            </div>
-          </div>
-
-          <Card className="mb-6 border-border/60 shadow-lg">
-            <CardHeader>
-              <h1 className="text-2xl font-bold text-center">{job.title} - Interview Feedback</h1>
-              <p className="text-center text-muted-foreground">
-                AI-generated assessment for your interview with {job.companyName}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {/* Add timestamp for when feedback was generated */}
-              {interviewState.feedbackGeneratedAt && (
-                <p className="text-xs text-muted-foreground mb-4 text-center">
-                  Feedback generated:{' '}
-                  {new Date(interviewState.feedbackGeneratedAt).toLocaleString()}
-                </p>
-              )}
-
-              {/* Add refresh capability even when feedback exists */}
-              <div className="flex justify-end mb-4">
-                <AutoGenerateFeedbackEnhanced applicationId={applicationId} />
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardHeader className="text-center py-6 border-b border-slate-100">
+            <div className="flex justify-center mb-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-50 border border-green-200">
+                <CheckCircle2 className="h-7 w-7 text-green-600" />
               </div>
+            </div>
+            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+              {job.title} - Interview Assessment
+            </CardTitle>
+            <p className="text-xs text-slate-500 mt-1">
+              AI performance assessment for {job.companyName}
+            </p>
+            {interviewState.feedbackGeneratedAt && (
+              <p className="text-[11px] font-mono tabular-nums text-slate-400 mt-1">
+                Generated: {new Date(interviewState.feedbackGeneratedAt).toLocaleString()}
+              </p>
+            )}
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex justify-end mb-4">
+              <AutoGenerateFeedbackEnhanced applicationId={applicationId} />
+            </div>
 
-              <FeedbackContent
-                initialFeedback={serializedFeedback}
-                applicationId={applicationId.toString()}
-                jobId={job._id ? job._id.toString() : job.id.toString()}
-              />
-            </CardContent>
-          </Card>
-        </div>
+            <FeedbackContent
+              initialFeedback={serializedFeedback}
+              applicationId={applicationId.toString()}
+              jobId={job._id ? job._id.toString() : job.id.toString()}
+            />
+          </CardContent>
+        </Card>
       </div>
     );
   } catch (error) {
-    console.error('Error loading interview feedback page:', error);
+    console.error('Error loading feedback page:', error);
     notFound();
   }
 }
