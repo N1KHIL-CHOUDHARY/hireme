@@ -29,9 +29,11 @@ export function NavUser() {
     return null;
   }
 
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    return names.map((name) => name[0]).join('');
+  const getInitials = (name?: string | null) => {
+    if (!name) return 'U';
+    const names = name.trim().split(/\s+/);
+    if (names.length === 1) return names[0].slice(0, 2).toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
   };
 
   return (
@@ -41,43 +43,46 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-slate-100 transition-colors"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarFallback className="rounded-lg">
-                  {getInitials(user.name as string)}
+              <Avatar className="h-8 w-8 rounded-md border border-slate-200">
+                <AvatarFallback className="rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-semibold">
+                  {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium text-slate-900">{user.name}</span>
+                <span className="truncate font-mono text-xs text-slate-500">{user.email}</span>
               </div>
-              <IconDotsVertical className="ml-auto size-4" />
+              <IconDotsVertical className="ml-auto size-4 text-slate-400" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg border border-slate-200 bg-white p-1 shadow-md"
             side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">
-                    {getInitials(user.name as string)}
+              <div className="flex items-center gap-2.5 px-2 py-2 text-left text-sm">
+                <Avatar className="h-8 w-8 rounded-md border border-slate-200">
+                  <AvatarFallback className="rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-semibold">
+                    {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium text-slate-900">{user.name}</span>
+                  <span className="truncate font-mono text-xs text-slate-500">{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
-              <IconLogout />
-              Log out
+            <DropdownMenuSeparator className="bg-slate-100" />
+            <DropdownMenuItem
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-red-600 focus:bg-slate-100 focus:text-red-600"
+            >
+              <IconLogout className="size-4" />
+              <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

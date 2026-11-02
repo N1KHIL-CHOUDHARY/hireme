@@ -1,7 +1,20 @@
 'use client';
 
 import { IconDashboard } from '@tabler/icons-react';
-import { BriefcaseIcon, Heart, User2Icon, UserIcon } from 'lucide-react';
+import {
+  Bookmark,
+  Briefcase,
+  Building2,
+  Compass,
+  FileText,
+  Heart,
+  PlusCircle,
+  Sparkles,
+  User,
+  User2,
+  Users,
+  Video,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -29,17 +42,17 @@ export function NavMain() {
     {
       title: 'Jobs',
       url: '/dashboard/manage-jobs',
-      icon: BriefcaseIcon,
+      icon: Briefcase,
     },
     {
       title: 'Candidates',
       url: '/dashboard/candidates',
-      icon: UserIcon,
+      icon: User,
     },
     {
       title: 'Recruiters',
       url: '/dashboard/recruiters',
-      icon: User2Icon,
+      icon: User2,
     },
     {
       title: 'Wishlist',
@@ -49,57 +62,83 @@ export function NavMain() {
     {
       title: 'Contact Submissions',
       url: '/dashboard/contact-submissions',
-      icon: UserIcon,
+      icon: User,
     },
   ];
 
   const recruiterMenu = [
     {
-      title: 'Dashboard',
+      title: 'Overview',
       url: '/dashboard',
       icon: IconDashboard,
     },
     {
-      title: 'Jobs',
+      title: 'My Jobs',
       url: '/dashboard/job-listing',
-      icon: BriefcaseIcon,
+      icon: Briefcase,
     },
     {
-      title: 'Job Applications',
+      title: 'Post a Job',
+      url: '/dashboard/job-listing?action=new',
+      icon: PlusCircle,
+    },
+    {
+      title: 'Applicants',
       url: '/dashboard/job-applications',
-      icon: UserIcon,
+      icon: Users,
+    },
+    {
+      title: 'Interviews',
+      url: '/dashboard/recruiter/interviews',
+      icon: Video,
+    },
+    {
+      title: 'Company Profile',
+      url: '/dashboard/company-profile',
+      icon: Building2,
     },
   ];
 
-  const userMenu = [
+  const candidateMenu = [
     {
-      title: 'Dashboard',
-      url: '/dashboard',
-      icon: IconDashboard,
-    },
-    {
-      title: 'Jobs',
+      title: 'Explore Jobs',
       url: '/dashboard/jobs',
-      icon: BriefcaseIcon,
+      icon: Compass,
     },
     {
       title: 'Applications',
       url: '/dashboard/applications',
-      icon: UserIcon,
+      icon: FileText,
+    },
+    {
+      title: 'Saved Jobs',
+      url: '/dashboard/saved-jobs',
+      icon: Bookmark,
+    },
+    {
+      title: 'AI Interviews',
+      url: '/dashboard/interviews',
+      icon: Sparkles,
+    },
+    {
+      title: 'Profile',
+      url: '/dashboard/profile',
+      icon: User,
     },
   ];
 
-  const menu = role === 'admin' ? adminMenu : role === 'recruiter' ? recruiterMenu : userMenu;
+  const menu = role === 'admin' ? adminMenu : role === 'recruiter' ? recruiterMenu : candidateMenu;
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-1 px-1">
         <SidebarMenu>
           {menu.map((item) => {
+            const baseUrl = item.url.split('?')[0];
             const isActive =
-              item.url === '/dashboard'
+              baseUrl === '/dashboard'
                 ? pathname === '/dashboard'
-                : pathname === item.url || pathname.startsWith(item.url + '/');
+                : pathname === baseUrl || pathname.startsWith(baseUrl + '/');
 
             return (
               <SidebarMenuItem key={item.title}>
