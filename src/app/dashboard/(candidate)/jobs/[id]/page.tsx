@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, BriefcaseIcon, CalendarIcon, MapPinIcon } from 'lucide-react';
+import { ArrowLeft, Briefcase, Calendar, MapPin } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -9,7 +9,8 @@ import remarkGfm from 'remark-gfm';
 import { getJobByUrlId } from '@/actions/jobs';
 import { JobApplyButton } from '@/components/jobs/job-apply-button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { getCountryLabel } from '@/data/countries';
 import { getSkillLabel } from '@/data/technical-skills';
 
@@ -49,13 +50,13 @@ export default async function CandidateJobDetailsPage(props: Props) {
   // Format dates
   const expiryDate = new Date(job.expiryDate).toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
   const postedDate = new Date(job.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
@@ -63,36 +64,44 @@ export default async function CandidateJobDetailsPage(props: Props) {
   const isExpired = new Date(job.expiryDate) < new Date();
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="space-y-6">
       <Link
         href="/dashboard/jobs"
-        className="inline-flex items-center text-sm mb-6 hover:underline"
+        className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-primary transition-colors"
       >
-        <ArrowLeftIcon className="h-4 w-4 mr-1" /> Back to job listings
+        <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to job listings
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content */}
-        <div className="lg:col-span-2">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">{job.title}</h1>
-            <div className="flex items-center text-lg text-muted-foreground">
-              <BriefcaseIcon className="h-5 w-5 mr-1" />
-              <span className="font-medium">{job.companyName}</span>
+        {/* Main content (2 cols) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                {job.title}
+              </h1>
+              {isExpired ? (
+                <StatusBadge status="expired" />
+              ) : job.isActive ? (
+                <StatusBadge status="active" />
+              ) : (
+                <StatusBadge status="closed" />
+              )}
             </div>
-            {isExpired && (
-              <Badge variant="destructive" className="mt-2">
-                Expired
-              </Badge>
-            )}
+            <div className="flex items-center text-base text-slate-600">
+              <Briefcase className="h-4 w-4 mr-1.5 text-slate-400" />
+              <span className="font-medium text-slate-700">{job.companyName}</span>
+            </div>
           </div>
 
-          <Card className="mb-6">
+          <Card>
             <CardHeader>
-              <h2 className="text-xl font-semibold">Job Description</h2>
+              <CardTitle className="text-lg font-semibold text-slate-900">
+                Job Description
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-primary">
+              <div className="prose max-w-none text-sm text-slate-700 leading-relaxed prose-headings:text-slate-900 prose-a:text-primary hover:prose-a:underline">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   rehypePlugins={[rehypeRaw]}
@@ -106,7 +115,10 @@ export default async function CandidateJobDetailsPage(props: Props) {
                       />
                     ),
                     code: (props) => (
-                      <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono" />
+                      <code
+                        {...props}
+                        className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono"
+                      />
                     ),
                   }}
                 >
@@ -117,12 +129,12 @@ export default async function CandidateJobDetailsPage(props: Props) {
           </Card>
 
           {job.requirements && (
-            <Card className="mb-6">
+            <Card>
               <CardHeader>
-                <h2 className="text-xl font-semibold">Requirements</h2>
+                <CardTitle className="text-lg font-semibold text-slate-900">Requirements</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-primary">
+                <div className="prose max-w-none text-sm text-slate-700 leading-relaxed prose-headings:text-slate-900 prose-a:text-primary">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                     {job.requirements}
                   </ReactMarkdown>
@@ -132,12 +144,12 @@ export default async function CandidateJobDetailsPage(props: Props) {
           )}
 
           {job.benefits && (
-            <Card className="mb-6">
+            <Card>
               <CardHeader>
-                <h2 className="text-xl font-semibold">Benefits</h2>
+                <CardTitle className="text-lg font-semibold text-slate-900">Benefits</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-primary">
+                <div className="prose max-w-none text-sm text-slate-700 leading-relaxed prose-headings:text-slate-900 prose-a:text-primary">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                     {job.benefits}
                   </ReactMarkdown>
@@ -147,46 +159,57 @@ export default async function CandidateJobDetailsPage(props: Props) {
           )}
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar (1 col) */}
         <div>
-          <Card className="mb-6 sticky top-6">
-            <CardContent className="pt-6">
-              <div className="flex items-center mb-4">
-                <MapPinIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+          <Card className="sticky top-6">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-base font-semibold text-slate-900">Job Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div className="flex items-center text-sm text-slate-600">
+                <MapPin className="h-4 w-4 mr-2.5 text-slate-400 flex-shrink-0" />
                 <span>{getCountryLabel(job.location)}</span>
               </div>
 
               {job.salary && (
-                <div className="flex items-center mb-4">
-                  <span className="font-medium mr-2">Salary:</span>
-                  <span>{job.salary}</span>
+                <div className="flex items-center text-sm">
+                  <span className="text-slate-500 mr-2">Salary:</span>
+                  <span className="font-mono font-medium text-slate-900 tabular-nums">
+                    {job.salary}
+                  </span>
                 </div>
               )}
 
-              <div className="flex items-center mb-4">
-                <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                <div>
+              <div className="flex items-start text-sm text-slate-600 pt-1">
+                <Calendar className="h-4 w-4 mr-2.5 mt-0.5 text-slate-400 flex-shrink-0" />
+                <div className="space-y-1 text-xs">
                   <div>
-                    <span className="font-medium">Posted:</span> {postedDate}
+                    <span className="text-slate-500">Posted:</span>{' '}
+                    <span className="font-mono tabular-nums text-slate-700">{postedDate}</span>
                   </div>
                   <div>
-                    <span className="font-medium">Expires:</span> {expiryDate}
+                    <span className="text-slate-500">Expires:</span>{' '}
+                    <span className="font-mono tabular-nums text-slate-700">{expiryDate}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <h3 className="font-medium mb-2">Required Skills</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="pt-2 border-t border-slate-100">
+                <h4 className="text-xs font-medium text-slate-700 mb-2">Required Skills</h4>
+                <div className="flex flex-wrap gap-1.5">
                   {job.skills.map((skill: string) => (
-                    <Badge key={skill} variant="secondary">
+                    <Badge
+                      key={skill}
+                      variant="secondary"
+                      className="text-xs font-normal bg-slate-100 text-slate-700 border-slate-200"
+                    >
                       {getSkillLabel(skill)}
                     </Badge>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="pt-4 border-t border-slate-100">
                 <JobApplyButton
                   jobId={id}
                   disabled={isExpired || !job.isActive}
