@@ -1,11 +1,11 @@
 'use client';
 
+import { CheckCircle2, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
-import { AIInterviewBackground } from './ai-interview-background';
 import { AIInterviewerIcon } from './ai-interviewer-icon';
 import { DeviceCheck } from './device-check';
 import { InterviewDetailsDialog } from './interview-details-dialog';
@@ -63,10 +63,7 @@ export function InterviewClient({
   };
 
   const handleStartInterview = () => {
-    // Save application ID in localStorage for resuming later if needed
     localStorage.setItem('currentInterviewId', applicationId);
-
-    // Navigate to the actual interview session
     router.push(`/dashboard/applications/${applicationId}/interview/session`);
   };
 
@@ -74,23 +71,17 @@ export function InterviewClient({
 
   return (
     <div className="space-y-6">
-      <div className="relative bg-muted/50 p-6 rounded-lg text-center overflow-hidden">
-        {/* Interview background */}
-        <AIInterviewBackground className="opacity-30" />
-
-        <div className="relative z-10">
-          <div className="mx-auto mb-4 flex flex-col items-center">
-            <AIInterviewerIcon size={84} />
-            <h2 className="text-2xl font-bold mt-4">Ready to begin your interview?</h2>
-          </div>
-          <p className="text-muted-foreground mb-6">
-            Our AI-powered system will guide you through a series of questions to assess your skills
-            and experience for this position. Please ensure your camera and microphone are working
-            properly.
+      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-6 text-center">
+        <div className="mx-auto mb-4 flex flex-col items-center">
+          <AIInterviewerIcon size={80} />
+          <h2 className="text-xl font-bold text-slate-900 mt-4">Ready to begin your interview?</h2>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-lg mt-2 leading-relaxed">
+            Our AI interviewer will guide you through a series of questions to assess your skills
+            and experience for this position. Please ensure your camera and microphone are working.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-4 justify-center">
+        <div className="pt-2 flex flex-col items-center">
           <DeviceCheck
             onComplete={handleDeviceCheckComplete}
             initialVideoDeviceId={selectedVideoDevice}
@@ -103,24 +94,40 @@ export function InterviewClient({
 
           <Button
             size="lg"
-            variant="default"
-            className="w-full mt-4"
+            className="w-full max-w-md mt-6 h-11 text-sm font-medium"
             disabled={!bothDevicesChecked}
             onClick={handleShowDetails}
           >
-            {bothDevicesChecked ? 'Start Interview' : 'Check Devices First'}
+            {bothDevicesChecked ? 'Proceed to Interview' : 'Verify Camera & Mic to Continue'}
           </Button>
         </div>
       </div>
 
-      <div className="bg-muted/30 p-6 rounded-lg">
-        <h3 className="font-medium mb-2">Interview Tips</h3>
-        <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-          <li>Find a quiet place with good lighting and minimal background noise</li>
-          <li>Dress professionally as you would for an in-person interview</li>
-          <li>Speak clearly and take your time to answer thoughtfully</li>
-          <li>Have your resume and relevant documents nearby for reference</li>
-          <li>The interview will take approximately 15-20 minutes to complete</li>
+      <div className="rounded-lg border border-slate-200/80 bg-white p-5 space-y-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+          <Info className="h-4 w-4 text-primary" />
+          <span>Interview Tips & Guidelines</span>
+        </div>
+        <ul className="space-y-2 text-xs text-slate-600">
+          <li className="flex items-start gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <span>Find a quiet room with good lighting and minimal background noise.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <span>Speak clearly and maintain eye contact with the camera while answering.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <span>You can speak using your microphone or type in your answers in the chat.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <span>
+              The session will take approximately{' '}
+              <span className="font-mono tabular-nums">{interviewDuration}</span> minutes.
+            </span>
+          </li>
         </ul>
       </div>
 

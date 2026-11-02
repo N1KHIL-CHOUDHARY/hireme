@@ -1,6 +1,6 @@
 'use client';
 
-import { Lightbulb, Star, StarHalf, ThumbsUp } from 'lucide-react';
+import { Lightbulb, RefreshCw, Star, StarHalf, ThumbsUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -28,7 +28,6 @@ export function FeedbackContent({ initialFeedback, applicationId }: FeedbackCont
   const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
 
-  // Function to refresh feedback
   const refreshFeedback = async () => {
     setIsRefreshing(true);
     try {
@@ -46,7 +45,6 @@ export function FeedbackContent({ initialFeedback, applicationId }: FeedbackCont
 
       if (data.feedback) {
         setFeedback(data.feedback);
-        // Also refresh the page to ensure server-side data is updated
         router.refresh();
       }
     } catch (error) {
@@ -56,140 +54,163 @@ export function FeedbackContent({ initialFeedback, applicationId }: FeedbackCont
     }
   };
 
-  // Render stars based on rating
   const renderStars = (rating: number = 0) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={`full-${i}`} className="h-5 w-5 fill-yellow-500 text-yellow-500" />);
+      stars.push(<Star key={`full-${i}`} className="h-4 w-4 fill-amber-500 text-amber-500" />);
     }
 
     if (hasHalfStar) {
-      stars.push(<StarHalf key="half" className="h-5 w-5 fill-yellow-500 text-yellow-500" />);
+      stars.push(<StarHalf key="half" className="h-4 w-4 fill-amber-500 text-amber-500" />);
     }
 
     const emptyStars = 5 - stars.length;
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="h-5 w-5 text-gray-300" />);
+      stars.push(<Star key={`empty-${i}`} className="h-4 w-4 text-slate-200" />);
     }
 
     return stars;
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Overall Impression */}
-      <div className="bg-muted/50 p-6 rounded-lg border border-border/60">
-        <div className="flex flex-wrap justify-between items-start gap-2 mb-3">
-          <h2 className="text-xl font-semibold">Overall Impression</h2>
+      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-5 space-y-2">
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <h2 className="text-sm font-semibold text-slate-900">Overall Assessment</h2>
           <Button
             size="sm"
             variant="outline"
             onClick={refreshFeedback}
             disabled={isRefreshing}
-            className="text-xs h-8"
+            className="text-xs h-7 gap-1"
           >
-            {isRefreshing ? 'Refreshing...' : 'Refresh Analysis'}
+            <RefreshCw className="h-3 w-3 text-slate-500" />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
           {feedback.overallImpression || 'No overall impression provided'}
         </p>
       </div>
 
       {/* Ratings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Technical Skills */}
-        <div className="bg-muted/30 p-4 rounded-lg border border-border/40">
-          <h3 className="text-sm font-medium mb-2">Technical Skills</h3>
-          <div className="flex items-center mb-2">
-            {renderStars(feedback.technicalSkills)}
-            <span className="ml-2 text-sm text-muted-foreground">
-              ({feedback.technicalSkills}/5)
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider block">
+            Technical Competence
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">{renderStars(feedback.technicalSkills)}</div>
+            <span className="font-mono text-sm font-bold tabular-nums text-slate-900">
+              {feedback.technicalSkills || 0}
+              <span className="text-xs font-normal text-slate-400"> / 5</span>
             </span>
           </div>
         </div>
 
         {/* Communication Skills */}
-        <div className="bg-muted/30 p-4 rounded-lg border border-border/40">
-          <h3 className="text-sm font-medium mb-2">Communication</h3>
-          <div className="flex items-center mb-2">
-            {renderStars(feedback.communicationSkills)}
-            <span className="ml-2 text-sm text-muted-foreground">
-              ({feedback.communicationSkills}/5)
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider block">
+            Communication
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">{renderStars(feedback.communicationSkills)}</div>
+            <span className="font-mono text-sm font-bold tabular-nums text-slate-900">
+              {feedback.communicationSkills || 0}
+              <span className="text-xs font-normal text-slate-400"> / 5</span>
             </span>
           </div>
         </div>
 
         {/* Problem Solving */}
-        <div className="bg-muted/30 p-4 rounded-lg border border-border/40">
-          <h3 className="text-sm font-medium mb-2">Problem Solving</h3>
-          <div className="flex items-center mb-2">
-            {renderStars(feedback.problemSolving)}
-            <span className="ml-2 text-sm text-muted-foreground">
-              ({feedback.problemSolving}/5)
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider block">
+            Problem Solving
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">{renderStars(feedback.problemSolving)}</div>
+            <span className="font-mono text-sm font-bold tabular-nums text-slate-900">
+              {feedback.problemSolving || 0}
+              <span className="text-xs font-normal text-slate-400"> / 5</span>
             </span>
           </div>
         </div>
 
         {/* Culture Fit */}
-        <div className="bg-muted/30 p-4 rounded-lg border border-border/40">
-          <h3 className="text-sm font-medium mb-2">Culture Fit</h3>
-          <div className="flex items-center mb-2">
-            {renderStars(feedback.cultureFit)}
-            <span className="ml-2 text-sm text-muted-foreground">({feedback.cultureFit}/5)</span>
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider block">
+            Culture Alignment
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">{renderStars(feedback.cultureFit)}</div>
+            <span className="font-mono text-sm font-bold tabular-nums text-slate-900">
+              {feedback.cultureFit || 0}
+              <span className="text-xs font-normal text-slate-400"> / 5</span>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Strengths */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3 flex items-center">
-          <ThumbsUp className="mr-2 h-5 w-5 text-green-500" />
-          Strengths
-        </h2>
-        <ul className="space-y-2">
-          {feedback.strengths?.map((strength: string, index: number) => (
-            <li key={index} className="flex items-start">
-              <div className="h-6 w-6 flex-shrink-0 flex items-center justify-center rounded-full bg-green-100 text-green-600 mr-2">
-                <span className="text-xs">{index + 1}</span>
-              </div>
-              <span>{strength}</span>
-            </li>
-          )) || <li className="text-muted-foreground">No strengths identified</li>}
-        </ul>
-      </div>
+      {/* Strengths & Improvement Areas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+        {/* Strengths */}
+        <div className="space-y-3">
+          <h2 className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <ThumbsUp className="h-4 w-4 text-green-600" />
+            <span>Demonstrated Strengths</span>
+          </h2>
+          <ul className="space-y-2">
+            {feedback.strengths?.map((strength: string, index: number) => (
+              <li
+                key={index}
+                className="flex items-start gap-2.5 p-3 rounded-lg border border-green-200/80 bg-green-50/40 text-xs text-slate-700"
+              >
+                <div className="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-green-100 text-green-700 font-mono text-[11px] font-semibold">
+                  {index + 1}
+                </div>
+                <span className="leading-relaxed mt-0.5">{strength}</span>
+              </li>
+            )) || <li className="text-xs text-slate-500">No strengths identified</li>}
+          </ul>
+        </div>
 
-      {/* Areas of Improvement */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3 flex items-center">
-          <Lightbulb className="mr-2 h-5 w-5 text-amber-500" />
-          Areas for Improvement
-        </h2>
-        <ul className="space-y-2">
-          {feedback.areasOfImprovement?.map((area: string, index: number) => (
-            <li key={index} className="flex items-start">
-              <div className="h-6 w-6 flex-shrink-0 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 mr-2">
-                <span className="text-xs">{index + 1}</span>
-              </div>
-              <span>{area}</span>
-            </li>
-          )) || <li className="text-muted-foreground">No improvement areas identified</li>}
-        </ul>
+        {/* Areas for Improvement */}
+        <div className="space-y-3">
+          <h2 className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <Lightbulb className="h-4 w-4 text-amber-600" />
+            <span>Growth Opportunities</span>
+          </h2>
+          <ul className="space-y-2">
+            {feedback.areasOfImprovement?.map((area: string, index: number) => (
+              <li
+                key={index}
+                className="flex items-start gap-2.5 p-3 rounded-lg border border-amber-200/80 bg-amber-50/40 text-xs text-slate-700"
+              >
+                <div className="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 font-mono text-[11px] font-semibold">
+                  {index + 1}
+                </div>
+                <span className="leading-relaxed mt-0.5">{area}</span>
+              </li>
+            )) || <li className="text-xs text-slate-500">No improvement areas identified</li>}
+          </ul>
+        </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
         <Link href={`/dashboard/applications/${applicationId}`} className="flex-1">
-          <Button variant="default" className="w-full">
-            View Application Status
+          <Button variant="default" className="w-full h-10 text-xs font-medium">
+            View Application Details
           </Button>
         </Link>
-        <Link href="/dashboard" className="flex-1">
-          <Button variant="outline" className="w-full">
-            Return to Dashboard
+        <Link href="/dashboard/applications" className="flex-1">
+          <Button variant="outline" className="w-full h-10 text-xs font-medium">
+            All Applications
           </Button>
         </Link>
       </div>
