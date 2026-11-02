@@ -1,38 +1,37 @@
-/* Interview components styling - Light Mode */
+/* Interview components styling - Light Mode Only */
 
 /* AI Interviewer Styles */
 .ai-interviewer-placeholder {
   position: relative;
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-out;
 }
 
 /* Light mode styles */
 :root {
-  --ai-gradient-start: rgba(59, 130, 246, 0.05);
-  --ai-gradient-end: rgba(139, 92, 246, 0.1);
-  --ai-border: rgba(59, 130, 246, 0.2);
-  --ai-shadow: rgba(59, 130, 246, 0.15);
-  --ai-text: #1e293b;
-  --ai-bg-pattern: rgba(59, 130, 246, 0.03);
+  --ai-gradient-start: rgba(37, 99, 235, 0.03);
+  --ai-gradient-end: rgba(37, 99, 235, 0.06);
+  --ai-border: rgba(226, 232, 240, 0.9);
+  --ai-shadow: rgba(15, 23, 42, 0.04);
+  --ai-text: #0f172a;
+  --ai-bg-pattern: rgba(37, 99, 235, 0.02);
 }
 
 /* Shared styles */
 .ai-interview-container {
-  background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+  background: #ffffff;
   border: 1px solid var(--ai-border);
-  box-shadow: 0 8px 32px var(--ai-shadow);
+  box-shadow: 0 1px 2px var(--ai-shadow);
   color: var(--ai-text);
 }
 
 .ai-interviewer-icon {
-  filter: drop-shadow(0 4px 8px var(--ai-shadow));
+  filter: drop-shadow(0 2px 4px var(--ai-shadow));
   transform-origin: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease-out;
 }
 
 .ai-interviewer-icon:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 /* Animated elements */
@@ -79,7 +78,7 @@
     opacity: 0.4;
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.03);
     opacity: 0.8;
   }
 }
@@ -90,7 +89,7 @@
     opacity: 0.8;
   }
   100% {
-    transform: scale(2);
+    transform: scale(1.8);
     opacity: 0;
   }
 }
@@ -120,29 +119,17 @@
     transform: scale(1);
     opacity: 0.6;
   }
-  10% {
-    transform: scale(1.12);
-    opacity: 0.95;
-  }
   25% {
-    transform: scale(0.95);
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(0.98);
     opacity: 0.7;
   }
-  40% {
-    transform: scale(1.08);
+  75% {
+    transform: scale(1.04);
     opacity: 0.9;
-  }
-  55% {
-    transform: scale(0.97);
-    opacity: 0.75;
-  }
-  70% {
-    transform: scale(1.1);
-    opacity: 0.95;
-  }
-  85% {
-    transform: scale(0.96);
-    opacity: 0.7;
   }
   100% {
     transform: scale(1);
@@ -153,123 +140,86 @@
 @keyframes speaking-wave {
   0%,
   100% {
-    transform: scaleY(1) scaleX(1);
+    transform: scaleY(1);
     opacity: 0.5;
   }
-  15% {
-    transform: scaleY(1.3) scaleX(1.08);
+  50% {
+    transform: scaleY(1.2);
     opacity: 0.9;
-  }
-  30% {
-    transform: scaleY(0.85) scaleX(0.95);
-    opacity: 0.6;
-  }
-  45% {
-    transform: scaleY(1.25) scaleX(1.06);
-    opacity: 0.95;
-  }
-  60% {
-    transform: scaleY(0.9) scaleX(0.97);
-    opacity: 0.7;
-  }
-  75% {
-    transform: scaleY(1.2) scaleX(1.04);
-    opacity: 0.9;
-  }
-  90% {
-    transform: scaleY(0.95) scaleX(0.98);
-    opacity: 0.6;
   }
 }
 
 @keyframes speaking-glow {
   0% {
-    box-shadow: 0 0 20px var(--ai-shadow);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.1);
     opacity: 0.4;
   }
-  25% {
-    box-shadow: 0 0 30px var(--ai-shadow);
-    opacity: 0.7;
-  }
   50% {
-    box-shadow: 0 0 40px var(--ai-shadow);
-    opacity: 0.9;
-  }
-  75% {
-    box-shadow: 0 0 25px var(--ai-shadow);
-    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+    opacity: 0.8;
   }
   100% {
-    box-shadow: 0 0 20px var(--ai-shadow);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.1);
     opacity: 0.4;
   }
 }
 
 .ai-speaking-pulse {
-  animation: speaking-pulse 1.2s ease-in-out infinite;
+  animation: speaking-pulse 1.8s ease-in-out infinite;
 }
 
 .ai-speaking-wave {
-  animation: speaking-wave 0.8s ease-in-out infinite;
+  animation: speaking-wave 1.2s ease-in-out infinite;
 }
 
 .ai-speaking-glow {
-  animation: speaking-glow 1.5s ease-in-out infinite;
+  animation: speaking-glow 2s ease-in-out infinite;
 }
 
-/* Accessibility: Respect reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .ai-thinking-gradient,
-  .ai-thinking-breathe,
-  .ai-thinking-ripple,
-  .ai-speaking-pulse,
-  .ai-speaking-wave,
-  .ai-speaking-glow {
-    animation: none;
+/* Subtle bounce for alerts */
+@keyframes subtle-bounce {
+  0%, 100% {
+    transform: translateY(0);
   }
-
-  .ai-thinking-gradient {
-    opacity: 0.5;
-  }
-
-  .ai-speaking-glow {
-    box-shadow: 0 0 25px var(--ai-shadow);
-    opacity: 0.6;
+  50% {
+    transform: translateY(-2px);
   }
 }
 
-/* AI Interview background circuit patterns */
-.ai-circuit-pattern {
-  background-image: url('/ai-interview-background.svg');
-  background-size: cover;
-  background-repeat: no-repeat;
-  opacity: var(--ai-bg-pattern);
+.animate-subtle-bounce {
+  animation: subtle-bounce 2s ease-in-out infinite;
 }
 
-/* Chat container improvements */
-.chat-section {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+/* Voice wave styles */
+.voice-wave {
+  width: 3px;
+  height: 12px;
+  background-color: #2563EB;
+  border-radius: 9999px;
+  animation: voiceWave 1.2s ease-in-out infinite;
 }
 
-/* Fixed height message container with proper scrolling */
-.chat-section .flex-1 {
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 110px); /* Adjust based on header and input height */
-  min-height: 0; /* Important for Firefox */
+.voice-wave:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
-/* Match video section height on desktop */
-@media (min-width: 768px) {
-  .interview-layout {
-    height: calc(100vh - 20rem);
+.voice-wave:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.voice-wave:nth-child(4) {
+  animation-delay: 0.6s;
+}
+
+.voice-wave:nth-child(5) {
+  animation-delay: 0.8s;
+}
+
+@keyframes voiceWave {
+  0%, 100% {
+    height: 4px;
   }
-
-  .chat-section,
-  .video-section {
-    height: 100%;
+  50% {
+    height: 20px;
   }
 }
