@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/ui/footer';
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6 },
+    transition: { duration: 0.18, ease: 'easeOut' },
   },
 };
 
@@ -21,114 +21,87 @@ export default function PrivacyPolicyPage() {
   const common = useTranslations('Common');
 
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Background gradients and patterns */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background"></div>
-        <div className="absolute top-0 left-1/4 h-[350px] w-[350px] rounded-full bg-purple-600/10 blur-[120px] animate-pulse-slow"></div>
-        <div
-          className="absolute bottom-0 right-1/4 h-[300px] w-[300px] rounded-full bg-blue-600/10 blur-[120px] animate-pulse-slow"
-          style={{ animationDelay: '2.5s' }}
-        ></div>
-        <div className="h-full w-full bg-[url('/patterns/waves.svg')] bg-repeat opacity-5"></div>
-      </div>
-
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        {/* Back Button */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            {common('navigation.back')}
-          </Button>
-        </motion.div>
-
-        <motion.div
-          className="prose prose-slate max-w-4xl mx-auto"
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-        >
-          <h1 className="text-4xl font-bold mb-8 text-center">{t('title')}</h1>
-
-          <div className="space-y-8">
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">{t('sections.introduction.title')}</h2>
-              <p className="text-muted-foreground">{t('sections.introduction.content')}</p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">
-                {t('sections.informationWeCollect.title')}
-              </h2>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>{t('sections.informationWeCollect.items.0')}</li>
-                <li>{t('sections.informationWeCollect.items.1')}</li>
-                <li>{t('sections.informationWeCollect.items.2')}</li>
-                <li>{t('sections.informationWeCollect.items.3')}</li>
-                <li>{t('sections.informationWeCollect.items.4')}</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">
-                {t('sections.howWeUseYourInformation.title')}
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                {t('sections.howWeUseYourInformation.purpose')}
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>{t('sections.howWeUseYourInformation.items.0')}</li>
-                <li>{t('sections.howWeUseYourInformation.items.1')}</li>
-                <li>{t('sections.howWeUseYourInformation.items.2')}</li>
-                <li>{t('sections.howWeUseYourInformation.items.3')}</li>
-                <li>{t('sections.howWeUseYourInformation.items.4')}</li>
-                <li>{t('sections.howWeUseYourInformation.items.5')}</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">{t('sections.dataSecurity.title')}</h2>
-              <p className="text-muted-foreground">{t('sections.dataSecurity.content')}</p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">{t('sections.yourRights.title')}</h2>
-              <p className="text-muted-foreground mb-4">{t('sections.yourRights.intro')}</p>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>{t('sections.yourRights.items.0')}</li>
-                <li>{t('sections.yourRights.items.1')}</li>
-                <li>{t('sections.yourRights.items.2')}</li>
-                <li>{t('sections.yourRights.items.3')}</li>
-                <li>{t('sections.yourRights.items.4')}</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">
-                {t('sections.changesToThisPolicy.title')}
-              </h2>
-              <p className="text-muted-foreground">{t('sections.changesToThisPolicy.content')}</p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">{t('sections.contactUs.title')}</h2>
-              <p className="text-muted-foreground">
-                {t('sections.contactUs.content')}{' '}
-                <a href="mailto:privacy@hirelytics.ai" className="text-primary hover:underline">
-                  privacy@hirelytics.ai
-                </a>
-                .
-              </p>
-            </section>
-
-            <div className="text-sm text-muted-foreground text-center pt-8">{t('lastUpdated')}</div>
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      <div className="flex-1">
+        <div className="container mx-auto px-4 py-12 sm:px-6">
+          {/* Back Button */}
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.history.back()}
+              className="gap-2 text-slate-600 hover:text-slate-900"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {common('navigation.back')}
+            </Button>
           </div>
-        </motion.div>
+
+          <motion.div
+            className="max-w-3xl mx-auto rounded-lg border border-slate-200 bg-white p-8 sm:p-12 shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
+            initial="hidden"
+            animate="visible"
+            variants={fadeIn}
+          >
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 mb-8 text-center">
+              {t('title')}
+            </h1>
+
+            <div className="space-y-8 text-sm text-slate-700 leading-relaxed">
+              <section>
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                  {t('sections.introduction.title')}
+                </h2>
+                <p className="text-slate-600">{t('sections.introduction.content')}</p>
+              </section>
+
+              <section>
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                  {t('sections.informationWeCollect.title')}
+                </h2>
+                <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
+                  <li>{t('sections.informationWeCollect.items.0')}</li>
+                  <li>{t('sections.informationWeCollect.items.1')}</li>
+                  <li>{t('sections.informationWeCollect.items.2')}</li>
+                  <li>{t('sections.informationWeCollect.items.3')}</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                  {t('sections.howWeUseInformation.title')}
+                </h2>
+                <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
+                  <li>{t('sections.howWeUseInformation.items.0')}</li>
+                  <li>{t('sections.howWeUseInformation.items.1')}</li>
+                  <li>{t('sections.howWeUseInformation.items.2')}</li>
+                  <li>{t('sections.howWeUseInformation.items.3')}</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                  {t('sections.dataSecurity.title')}
+                </h2>
+                <p className="text-slate-600">{t('sections.dataSecurity.content')}</p>
+              </section>
+
+              <section>
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                  {t('sections.yourRights.title')}
+                </h2>
+                <p className="text-slate-600">{t('sections.yourRights.content')}</p>
+              </section>
+
+              <section>
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                  {t('sections.contactUs.title')}
+                </h2>
+                <p className="text-slate-600">{t('sections.contactUs.content')}</p>
+              </section>
+            </div>
+          </motion.div>
+        </div>
       </div>
       <Footer />
     </div>
