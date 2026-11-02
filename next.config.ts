@@ -1,19 +1,13 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   serverExternalPackages: ['pdf-parse'],
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'hirelytics.t3.storage.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: 'eu2.contabostorage.com',
-      },
+      { protocol: 'https', hostname: 'hirelytics.t3.storage.dev' },
+      { protocol: 'https', hostname: 'eu2.contabostorage.com' },
     ],
   },
   async rewrites() {
@@ -32,12 +26,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // This is required to support PostHog trailing slash API requests
+  // Required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
 };
 
-// Use next-intl plugin without additional configuration
-// The middleware will handle the locale detection
 const withNextIntl = createNextIntlPlugin();
+
+initOpenNextCloudflareForDev();
 
 export default withNextIntl(nextConfig);
