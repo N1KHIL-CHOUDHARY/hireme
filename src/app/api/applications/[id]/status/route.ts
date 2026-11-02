@@ -5,6 +5,22 @@ import { connectToDatabase } from '@/lib/database';
 import Job from '@/models/job';
 import { JobApplication } from '@/models/job-application';
 
+const VALID_STATUSES = [
+  'applied',
+  'under review',
+  'under_review',
+  'shortlisted',
+  'interview scheduled',
+  'interview_scheduled',
+  'assessment',
+  'offered',
+  'rejected',
+  'withdrawn',
+  'pending',
+  'reviewed',
+  'accepted',
+];
+
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectToDatabase();
@@ -21,8 +37,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       );
     }
 
-    // Only recruiters can update application status
-    if (session.user?.role !== 'recruiter') {
+    // Only recruiters or admin can update application status
+    if (session.user?.role !== 'recruiter' && session.user?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Unauthorized. Recruiter access required.' },
         { status: 403 }
@@ -51,25 +67,31 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     // Check if the current recruiter is assigned to this job
-    if (job.recruiter.toString() !== session.user.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Unauthorized. You are not the recruiter for this job.',
-        },
-        { status: 403 }
-      );
+    if (session.user.role === 'recruiter') {
+      const recruiterId = job.recruiter?.id || job.recruiter?._id || job.recruiter?.toString?.();
+      if (recruiterId && String(recruiterId) !== session.user.id) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Unauthorized. You are not the recruiter for this job.',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Get request body
     const data = await req.json();
 
     // Validate status
-    if (!data.status || !['pending', 'reviewed', 'accepted', 'rejected'].includes(data.status)) {
+    const normalizedStatus = String(data.status || '')
+      .toLowerCase()
+      .trim();
+    if (!data.status || !VALID_STATUSES.includes(normalizedStatus)) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid status. Must be one of: pending, reviewed, accepted, rejected',
+          message: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
         },
         { status: 400 }
       );
