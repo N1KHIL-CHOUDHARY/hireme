@@ -20,7 +20,7 @@ export function SpeechVisualizer({ isListening, className }: SpeechVisualizerPro
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const bars = 16; // Number of bars
+    const bars = 16;
     const barWidth = canvas.width / bars;
     const barMargin = 2;
     const minBarHeight = 2;
@@ -29,30 +29,29 @@ export function SpeechVisualizer({ isListening, className }: SpeechVisualizerPro
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (!isListening) {
-        // When not listening, show minimal flat bars
+        // When not listening, show minimal flat bars in subtle primary blue
         for (let i = 0; i < bars; i++) {
           const x = i * barWidth + barMargin / 2;
           const barWidthWithMargin = barWidth - barMargin;
-          ctx.fillStyle = 'rgba(136, 58, 234, 0.3)'; // Primary color, low opacity
+          ctx.fillStyle = 'rgba(37, 99, 235, 0.2)';
           ctx.fillRect(x, canvas.height - minBarHeight, barWidthWithMargin, minBarHeight);
         }
         return;
       }
 
-      // When listening, show animated bars
+      // When listening, show animated bars with primary blue scale
       for (let i = 0; i < bars; i++) {
         const x = i * barWidth + barMargin / 2;
         const barWidthWithMargin = barWidth - barMargin;
 
-        // Create varying heights with a sine pattern and randomness
         const baseHeight = Math.sin(Date.now() / 200 + i) * 10 + 15;
         const variance = Math.sin(Date.now() / 100 + i * 2) * 5;
         const height = Math.max(minBarHeight, baseHeight + variance);
 
-        // Create a gradient from primary to secondary color
+        // Linear gradient in primary blue shades (#2563EB to #60A5FA)
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, 'rgba(136, 58, 234, 0.9)'); // Primary
-        gradient.addColorStop(1, 'rgba(238, 96, 156, 0.5)'); // Secondary
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.9)');
+        gradient.addColorStop(1, 'rgba(96, 165, 250, 0.5)');
 
         ctx.fillStyle = gradient;
         ctx.fillRect(x, canvas.height - height, barWidthWithMargin, height);

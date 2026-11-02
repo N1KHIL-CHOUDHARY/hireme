@@ -4,8 +4,8 @@ import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { IJob } from '@/models/job';
 
 import { JobApplicationModal } from './job-application-modal';
@@ -45,10 +45,8 @@ export function JobApplyButton({
   // If job is expired, show only the expired badge for all users
   if (isExpired) {
     return (
-      <div className={variant === 'default' ? 'w-full text-center' : ''}>
-        <Badge variant="destructive" className={variant === 'small' ? 'text-xs px-2' : 'px-3 py-1'}>
-          Job Expired
-        </Badge>
+      <div className={variant === 'default' ? 'w-full flex justify-center py-1' : ''}>
+        <StatusBadge status="expired" />
       </div>
     );
   }
@@ -64,7 +62,7 @@ export function JobApplyButton({
         {isLoading ? (
           <>
             <Loader2
-              className={`${variant === 'small' ? 'h-3.5 w-3.5' : 'h-4 w-4'} mr-1 animate-spin`}
+              className={`${variant === 'small' ? 'h-3.5 w-3.5' : 'h-4 w-4'} mr-1.5 animate-spin`}
             />
             {variant === 'small' ? 'Loading...' : 'Processing...'}
           </>
