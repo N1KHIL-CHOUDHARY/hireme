@@ -1,21 +1,20 @@
 import { Metadata } from 'next';
 
 import { JobsList } from '@/components/jobs/jobs-list';
+import { PageHeader } from '@/components/ui/page-header';
 
 export const metadata: Metadata = {
-  title: 'Job Listings | Candidate Dashboard | Hirelytics',
-  description: 'Browse through available job positions and find your next opportunity',
+  title: 'Explore Jobs | Hirelytics',
+  description: 'Discover and apply to curated career opportunities matching your skillset',
 };
 
 export default function CandidateJobsPage() {
   return (
-    <div className="container mx-auto py-6 space-y-8">
-      <div className="flex flex-col">
-        <h1 className="text-3xl font-bold tracking-tight">Job Listings</h1>
-        <p className="text-muted-foreground mt-1">
-          Browse available positions and apply to opportunities that match your skills
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Explore Jobs"
+        description="Discover open roles, filter by work mode and skills, and apply with instant AI match benchmarking"
+      />
 
       <JobsList />
     </div>

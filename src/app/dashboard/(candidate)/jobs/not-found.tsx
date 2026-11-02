@@ -1,21 +1,20 @@
-import { FileSearch } from 'lucide-react';
-import Link from 'next/link';
+import { FileQuestion } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export default function JobNotFound() {
   return (
-    <div className="container mx-auto py-12 flex flex-col items-center justify-center text-center">
-      <FileSearch className="h-24 w-24 text-primary/50" />
-      <h1 className="text-3xl font-bold mt-6">Job Not Found</h1>
-      <p className="text-lg text-muted-foreground mt-2 max-w-md">
-        The job listing you&apos;re looking for doesn&apos;t exist or has been removed.
-      </p>
-      <div className="mt-8">
-        <Link href="/dashboard/jobs">
-          <Button>Browse available jobs</Button>
-        </Link>
-      </div>
+    <div className="py-12 flex justify-center">
+      <EmptyState
+        icon={<FileQuestion className="h-10 w-10 text-slate-400" />}
+        title="Jobs Not Found"
+        description="The job listings you're looking for cannot be found or have been removed."
+        action={{
+          label: 'Browse all jobs',
+          href: '/dashboard/jobs',
+        }}
+        className="max-w-md w-full"
+      />
     </div>
   );
 }
