@@ -589,7 +589,7 @@ export function SpeechRecognitionInput({
                       isListening ? 'opacity-100' : 'opacity-0'
                     )}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-primary animate-gradient"></div>
+                    <div className="absolute inset-0 bg-primary"></div>
                     <div className="absolute inset-0 bg-primary/20 animate-ping"></div>
                   </div>
 

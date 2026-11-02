@@ -577,7 +577,7 @@ export function InterviewSession({
   ) : (
     <div className="w-full min-h-[calc(100vh-20rem)] flex flex-col md:flex-row interview-layout gap-4">
       {/* Video Section - 70% on desktop, 100% on mobile */}
-      <div className="video-section bg-muted rounded-lg overflow-hidden flex flex-col w-full md:w-[70%]">
+      <div className="video-section bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex flex-col w-full md:w-[70%]">
         <div className={`flex-1 relative flex ${isMobile ? 'flex-col' : 'flex-row'}`}>
           {/* AI Video */}
           <div
@@ -589,7 +589,7 @@ export function InterviewSession({
             {/* AI Interview background with circuits pattern */}
             <AIInterviewBackground />
 
-            <div className="absolute top-3 left-3 bg-background/50 backdrop-blur-sm px-3 py-1 rounded-md text-sm font-medium shadow-md border border-border/50 z-10">
+            <div className="absolute top-3 left-3 bg-white/90 px-2.5 py-1 rounded-md text-xs font-semibold text-slate-700 border border-slate-200 shadow-sm z-10">
               AI Interviewer
             </div>
 
@@ -627,7 +627,7 @@ export function InterviewSession({
               isMobile ? 'h-1/2' : 'flex-1'
             } bg-black flex items-center justify-center`}
           >
-            <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-md text-sm font-medium text-white/90 shadow-md border border-white/10">
+            <div className="absolute top-3 left-3 bg-black/70 px-2.5 py-1 rounded-md text-xs font-medium text-white shadow-sm border border-white/20 z-10">
               You
             </div>
             <Webcam
@@ -652,7 +652,7 @@ export function InterviewSession({
         </div>
 
         {/* Video Controls */}
-        <div className="h-16 flex items-center justify-center gap-4 bg-background/95 backdrop-blur-sm px-4 border-t">
+        <div className="h-16 flex items-center justify-center gap-4 bg-white px-4 border-t border-slate-200">
           {/* <Button
             variant={micEnabled ? "ghost" : "destructive"}
             size="icon"
@@ -700,9 +700,9 @@ export function InterviewSession({
       </div>
 
       {/* Chat Section - 30% on desktop, 100% on mobile */}
-      <div className="chat-section flex flex-col bg-muted rounded-lg overflow-hidden w-full md:w-[30%] min-w-[280px] h-[500px] md:h-full mt-4 md:mt-0">
+      <div className="chat-section flex flex-col bg-white border border-slate-200 rounded-lg overflow-hidden w-full md:w-[30%] min-w-[280px] h-[500px] md:h-full mt-4 md:mt-0 shadow-sm">
         {/* Chat Header - Fixed at top */}
-        <div className="p-3 border-b bg-gradient-to-r from-muted/80 to-muted/50 flex items-center justify-between">
+        <div className="p-3 border-b border-slate-200 bg-white flex items-center justify-between">
           <div className="flex items-center">
             <h3 className="font-semibold text-foreground/90">Interview Chat</h3>
 
@@ -744,25 +744,25 @@ export function InterviewSession({
 
           <div className="flex gap-1">
             {isInitializing && (
-              <div className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+              <div className="text-[11px] font-mono px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
                 Initializing...
               </div>
             )}
 
             {isAudioPlaying && !isInitializing && (
-              <div className="text-xs px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+              <div className="text-[11px] font-mono px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">
                 AI is talking...
               </div>
             )}
 
             {!isUserTurn && !isInitializing && !isAudioPlaying && (
-              <div className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
+              <div className="text-[11px] font-mono px-2 py-0.5 bg-blue-50 text-primary border border-blue-200 rounded-full">
                 AI is responding...
               </div>
             )}
 
             {isUserTurn && messages.length > 0 && !isInitializing && !isAudioPlaying && (
-              <div className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full whitespace-nowrap animate-subtle-bounce">
+              <div className="text-[11px] font-mono px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full whitespace-nowrap">
                 Your turn
               </div>
             )}
@@ -820,11 +820,9 @@ export function InterviewSession({
                       <div
                         className={`max-w-[75%] p-3 rounded-lg shadow-sm ${
                           message.sender === 'ai'
-                            ? 'bg-muted-foreground/10 text-foreground border border-border/50'
-                            : 'bg-primary/90 text-primary-foreground'
-                        } ${
-                          message.sender === 'ai' ? 'rounded-tl-none' : 'rounded-tr-none'
-                        } transition-all hover:shadow-md`}
+                            ? 'bg-slate-100 text-slate-800 border border-slate-200/80'
+                            : 'bg-primary text-primary-foreground'
+                        } ${message.sender === 'ai' ? 'rounded-tl-none' : 'rounded-tr-none'}`}
                       >
                         <p className="text-sm whitespace-pre-wrap">{message.text}</p>
                         <div className="flex justify-between items-center mt-1">
@@ -865,7 +863,7 @@ export function InterviewSession({
         </div>
 
         {/* Input Area - Fixed at bottom */}
-        <div className="p-3 border-t bg-background/80 backdrop-blur-sm">
+        <div className="p-3 border-t border-slate-200 bg-white">
           {/* Speech Recognition Input Component */}
           <div className="flex items-end relative">
             <div className="flex-1 pr-28 relative">
@@ -895,7 +893,7 @@ export function InterviewSession({
                 } /* Hide the internal mic button so we can use our external ones */
               />
               {/* Positioned buttons in a button group with consistent styling */}
-              <div className="absolute right-3 bottom-3 flex gap-2 items-center bg-background/70 backdrop-blur-sm px-1.5 py-1.5 rounded-full shadow-sm border border-muted/30">
+              <div className="absolute right-2.5 bottom-2.5 flex gap-1.5 items-center bg-white px-1 py-1 rounded-full border border-slate-200 shadow-sm">
                 {/* Mic Button with active state */}
                 <TooltipProvider>
                   <Tooltip>
