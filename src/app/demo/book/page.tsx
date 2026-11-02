@@ -1,45 +1,54 @@
 'use client';
 
 import Cal from '@calcom/embed-react';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+
+import { Button } from '@/components/ui/button';
+import { Footer } from '@/components/ui/footer';
 
 export default function BookDemoPage() {
   const t = useTranslations('Demo');
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background relative">
-      {/* Background elements */}
-      <div className="absolute inset-0 z-0 opacity-40">
-        <div className="absolute top-0 left-0 h-[500px] w-[500px] rounded-full bg-blue-600/30 blur-[120px] animate-pulse-slow"></div>
-        <div
-          className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-purple-600/30 blur-[120px] animate-pulse-slow"
-          style={{ animationDelay: '2s' }}
-        ></div>
-        <div
-          className="absolute top-1/2 right-1/4 h-[300px] w-[300px] rounded-full bg-indigo-600/30 blur-[100px] animate-pulse-slow"
-          style={{ animationDelay: '1s' }}
-        ></div>
-      </div>
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      <div className="flex-1">
+        <div className="container mx-auto px-4 py-8 sm:px-6">
+          <div className="mb-6">
+            <Link href="/demo">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Demos
+              </Button>
+            </Link>
+          </div>
 
-      {/* Pattern overlay */}
-      <div className="absolute inset-0 z-0 opacity-10">
-        <div className="h-full w-full bg-[url('/patterns/grid.svg')] bg-repeat opacity-20"></div>
-      </div>
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-2">
+              {t('book.title')}
+            </h1>
+            <p className="text-sm text-slate-600">{t('book.description')}</p>
+          </div>
 
-      <div className="container mx-auto px-4 pt-8 relative z-10">
-        <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">{t('book.title')}</h1>
-          <p className="text-muted-foreground text-lg">{t('book.description')}</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] max-w-4xl mx-auto overflow-hidden">
+            <Cal
+              calLink="sumanta-kabiraj/hirelytics-demo"
+              style={{ width: '100%', height: '700px' }}
+              config={{
+                name: 'Hirelytics Demo',
+                hideEventTypeDetails: '0',
+                layout: 'month_view',
+              }}
+            />
+          </div>
         </div>
-        <Cal
-          calLink="sumanta-kabiraj/hirelytics-demo"
-          style={{ width: '100%', height: '800px' }}
-          config={{
-            name: 'Hirelytics Demo',
-            hideEventTypeDetails: '0',
-            layout: 'month_view',
-          }}
-        />
       </div>
+      <Footer />
     </div>
   );
 }
