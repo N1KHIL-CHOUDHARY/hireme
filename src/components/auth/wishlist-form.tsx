@@ -19,7 +19,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-// Define form schema
 const wishlistSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -73,9 +72,9 @@ export function WishlistForm() {
 
   if (submitted) {
     return (
-      <div className="bg-primary/10 p-6 rounded-lg text-center">
-        <h3 className="text-lg font-medium mb-2">{t('form.success.title')}</h3>
-        <p>{t('form.success.message')}</p>
+      <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center">
+        <h3 className="text-base font-semibold text-blue-900 mb-1">{t('form.success.title')}</h3>
+        <p className="text-sm text-blue-700">{t('form.success.message')}</p>
       </div>
     );
   }
