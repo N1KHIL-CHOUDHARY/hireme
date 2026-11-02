@@ -10,11 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/ui/footer';
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6 },
+    transition: { duration: 0.18, ease: 'easeOut' },
   },
 };
 
@@ -23,36 +23,21 @@ export default function AboutPage() {
   const common = useTranslations('Common');
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background gradients and patterns */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/4 h-[350px] w-[350px] rounded-full bg-purple-600/10 blur-[120px] animate-pulse-slow"></div>
-        <div
-          className="absolute bottom-0 right-1/4 h-[300px] w-[300px] rounded-full bg-blue-600/10 blur-[120px] animate-pulse-slow"
-          style={{ animationDelay: '2.5s' }}
-        ></div>
-        <div className="h-full w-full bg-[url('/patterns/waves.svg')] bg-repeat opacity-5"></div>
-      </div>
-
-      <div className="relative z-10">
-        <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      <div className="flex-1">
+        <div className="container mx-auto px-4 py-12 sm:px-6">
           {/* Back Button */}
-          <motion.div
-            className="mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
+          <div className="mb-8">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.history.back()}
-              className="gap-2"
+              className="gap-2 text-slate-600 hover:text-slate-900"
             >
               <ArrowLeft className="h-4 w-4" />
               {common('navigation.back')}
             </Button>
-          </motion.div>
+          </div>
 
           <motion.div
             className="text-center mb-12"
@@ -60,42 +45,32 @@ export default function AboutPage() {
             animate="visible"
             variants={fadeIn}
           >
-            <h1 className="text-4xl font-bold mb-4">{t('title')}</h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">{t('subtitle')}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl mb-3">
+              {t('title')}
+            </h1>
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">{t('subtitle')}</p>
           </motion.div>
 
-          <div className="grid gap-12 md:grid-cols-2 items-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <h2 className="text-2xl font-semibold mb-4">{t('mission.title')}</h2>
-              <p className="text-muted-foreground mb-4">{t('mission.description1')}</p>
-              <p className="text-muted-foreground">{t('mission.description2')}</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="relative h-[250px] rounded-lg overflow-hidden shadow-lg"
-            >
+          <div className="grid gap-8 md:grid-cols-2 items-center mb-16">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                {t('mission.title')}
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">{t('mission.description1')}</p>
+              <p className="text-sm text-slate-600 leading-relaxed">{t('mission.description2')}</p>
+            </div>
+            <div className="relative h-[220px] rounded-lg border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgb(15_23_42/0.04)] flex items-center justify-center">
               <Image
                 src="/images/hirelytics-full-logo.svg"
                 alt="Hirelytics Mission"
-                fill
-                className="object-cover"
+                width={300}
+                height={80}
+                className="h-16 w-auto"
               />
-            </motion.div>
+            </div>
           </div>
 
-          <motion.div
-            className="grid gap-8 md:grid-cols-3 mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            {' '}
+          <div className="grid gap-6 md:grid-cols-3 mb-16">
             {[
               {
                 title: t('values.innovation.title'),
@@ -112,34 +87,30 @@ export default function AboutPage() {
             ].map((value, index) => (
               <div
                 key={index}
-                className="p-6 rounded-lg border bg-card shadow-sm hover:shadow-md transition-shadow"
+                className="p-6 rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
               >
-                <h3 className="text-xl font-semibold mb-3">{value.title}</h3>
-                <p className="text-muted-foreground">{value.description}</p>
+                <h3 className="text-base font-semibold text-slate-900 mb-2">{value.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{value.description}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary mb-6">
-              <Sparkles size={16} />
-              {t('cta.badge')}
+          <div className="text-center py-8 border-t border-slate-200">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-0.5 text-xs font-medium text-primary mb-4">
+              <Sparkles size={12} />
+              <span>{t('cta.badge')}</span>
             </div>
-            <h2 className="text-2xl font-semibold mb-4">{t('cta.title')}</h2>
-            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">{t('cta.description')}</p>
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-primary via-blue-500 to-purple-500 px-8 py-3 text-sm font-medium text-white shadow hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <Sparkles size={16} className="relative z-10" />
-              <span className="relative z-10">{common('buttons.getStarted')}</span>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 mb-2">
+              {t('cta.title')}
+            </h2>
+            <p className="text-sm text-slate-600 mb-6 max-w-xl mx-auto">{t('cta.description')}</p>
+            <Link href="/register">
+              <Button size="lg" className="gap-2">
+                <Sparkles size={16} />
+                <span>{common('buttons.getStarted')}</span>
+              </Button>
             </Link>
-          </motion.div>
+          </div>
         </div>
       </div>
       <Footer />

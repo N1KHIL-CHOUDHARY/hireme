@@ -77,12 +77,38 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const job = await Job.findById(application.jobId);
 
+    // Enforce recruiter and candidate ownership checks
+    if (session.user.role === 'recruiter') {
+      const recruiterId = job?.recruiter?.id || job?.recruiter?._id || job?.recruiter?.toString?.();
+      if (job && recruiterId && String(recruiterId) !== session.user.id) {
+        return NextResponse.json(
+          {
+            error: 'Forbidden',
+            message: 'You do not have permission to view applications for this job',
+          },
+          { status: 403 }
+        );
+      }
+    } else if (session.user.role === 'candidate') {
+      const appUserId = application.userId?.toString();
+      if (appUserId && appUserId !== session.user.id) {
+        return NextResponse.json(
+          {
+            error: 'Forbidden',
+            message: 'You do not have permission to view this application',
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Get query parameter to include base64 data or not
     const url = new URL(req.url);
     const includeBase64 = url.searchParams.get('includeBase64') === 'true';
 
     // Generate signed URLs for files stored in Supabase Storage
-    const appData = typeof application.toJSON === 'function' ? application.toJSON() : { ...application };
+    const appData =
+      typeof application.toJSON === 'function' ? application.toJSON() : { ...application };
     const bucketName = appData.s3Bucket || process.env.SUPABASE_STORAGE_BUCKET || DEFAULT_BUCKET;
 
     // Process monitoring images if they exist
@@ -169,6 +195,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         { success: false, message: 'Application not found' },
         { status: 404 }
       );
+    }
+
+    const job = await Job.findById(application.jobId);
+
+    // Recruiter or candidate ownership check
+    if (session.user.role === 'recruiter') {
+      const recruiterId = job?.recruiter?.id || job?.recruiter?._id || job?.recruiter?.toString?.();
+      if (job && recruiterId && String(recruiterId) !== session.user.id) {
+        return NextResponse.json(
+          {
+            error: 'Forbidden',
+            message: 'You do not have permission to update applications for this job',
+          },
+          { status: 403 }
+        );
+      }
+    } else if (session.user.role === 'candidate') {
+      const appUserId = application.userId?.toString();
+      if (appUserId && appUserId !== session.user.id) {
+        return NextResponse.json(
+          {
+            error: 'Forbidden',
+            message: 'You do not have permission to update this application',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Get request body
