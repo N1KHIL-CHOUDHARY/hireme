@@ -1,5 +1,9 @@
+import { Check, RefreshCw } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MatchScoreBadge } from '@/components/ui/status-badge';
 
 interface MatchResultProps {
   score?: number;
@@ -19,177 +23,122 @@ export default function ResumeMatchResult({
   onRefreshRequest,
 }: MatchResultProps) {
   return (
-    <Card className="mb-4 border-none bg-[#1c1c1c] shadow-none">
-      <CardHeader className="py-3 px-4 border-b border-border/40">
-        <CardTitle className="text-base font-medium flex justify-between items-center">
-          <span>Resume-Job Match Analysis</span>
-          {onRefreshRequest && (
-            <Button
-              onClick={onRefreshRequest}
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-md"
-            >
-              Refresh Analysis
-            </Button>
+    <Card className="border-slate-200 bg-white shadow-sm">
+      <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-base font-semibold text-slate-900">
+            Resume Match Analysis
+          </CardTitle>
+          {matchedAt && (
+            <p className="text-xs text-slate-500 font-mono tabular-nums mt-0.5">
+              Updated: {new Date(matchedAt).toLocaleString()}
+            </p>
           )}
-        </CardTitle>
+        </div>
+        {onRefreshRequest && (
+          <Button
+            onClick={onRefreshRequest}
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
+            Refresh Analysis
+          </Button>
+        )}
       </CardHeader>
-      <CardContent className="py-4 px-4">
+      <CardContent className="p-6">
         {score !== undefined ? (
-          <>
-            {/* Skills, Experience, Education Grid at Top */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="space-y-6">
+            {/* Score Callout */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-lg border border-slate-100 bg-slate-50/50">
+              <div className="flex flex-col items-center justify-center flex-shrink-0">
+                <span
+                  className={`text-4xl font-bold font-mono tabular-nums ${
+                    score >= 70 ? 'text-green-600' : score >= 50 ? 'text-amber-600' : 'text-red-600'
+                  }`}
+                >
+                  {score}%
+                </span>
+                <span className="text-xs text-slate-500 mt-0.5">
+                  {score >= 70 ? 'Strong Match' : score >= 50 ? 'Partial Match' : 'Low Match'}
+                </span>
+              </div>
+              <div className="flex-1 w-full space-y-2">
+                <div className="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      score >= 70 ? 'bg-green-600' : score >= 50 ? 'bg-amber-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${score}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>Match threshold</span>
+                  <MatchScoreBadge score={score} />
+                </div>
+              </div>
+            </div>
+
+            {/* Skills breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {topSkillMatches && topSkillMatches.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-xs mb-2 text-muted-foreground">
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Top Matching Skills
                   </h4>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {topSkillMatches.map((skill, index) => (
-                      <span
+                      <Badge
                         key={index}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-[#1a1a1a] text-[#f1f1f1] border border-[#333]"
+                        variant="secondary"
+                        className="text-xs font-normal bg-green-50 text-green-700 border-green-200"
                       >
+                        <Check className="h-3 w-3 mr-1 text-green-600" />
                         {skill}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
               )}
 
               {missingSkills && missingSkills.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-xs mb-2 text-muted-foreground">
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Skills to Develop
                   </h4>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {missingSkills.map((skill, index) => (
-                      <span
+                      <Badge
                         key={index}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-[#1a1a1a] text-[#f1f1f1] border border-[#333]"
+                        variant="outline"
+                        className="text-xs font-normal bg-red-50/60 text-red-700 border-red-200"
                       >
                         {skill}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Match Score Circle */}
-            <div className="flex justify-center mb-6">
-              <div className="flex-shrink-0 text-center">
-                <div className="relative w-28 h-28 mx-auto">
-                  <div className="absolute inset-0 rounded-full border-4 border-border/40 flex flex-col items-center justify-center">
-                    <span
-                      className={`text-4xl font-bold ${
-                        score >= 70
-                          ? 'text-green-500'
-                          : score >= 50
-                            ? 'text-amber-500'
-                            : 'text-red-500'
-                      }`}
-                    >
-                      {score}%
-                    </span>
-                    <span
-                      className={`text-xs mt-1 ${
-                        score >= 70
-                          ? 'text-green-500'
-                          : score >= 50
-                            ? 'text-amber-500'
-                            : 'text-red-500'
-                      } flex items-center`}
-                    >
-                      {score >= 70 ? (
-                        <>
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            className="h-3 w-3 mr-1"
-                            stroke="currentColor"
-                          >
-                            <path
-                              d="M9 12l2 2 4-4"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          Strong Match
-                        </>
-                      ) : score >= 50 ? (
-                        <>
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            className="h-3 w-3 mr-1"
-                            stroke="currentColor"
-                          >
-                            <path
-                              d="M12 8v4m0 4h.01"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          Partial Match
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            className="h-3 w-3 mr-1"
-                            stroke="currentColor"
-                          >
-                            <path
-                              d="M6 18L18 6M6 6l12 12"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          Low Match
-                        </>
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-center mt-1 text-xs text-muted-foreground">
-                  {matchedAt && `Updated: ${new Date(matchedAt).toLocaleString()}`}
-                </div>
-              </div>
-            </div>
-
             {/* AI Analysis Below */}
             {comments && (
-              <div className="mt-2 border-t border-border/40 pt-4">
-                <h3 className="text-sm font-semibold mb-2">AI Analysis</h3>
-                <div className="text-sm text-[#f1f1f1]">{comments}</div>
+              <div className="pt-4 border-t border-slate-100 space-y-1.5">
+                <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  AI Screening Summary
+                </h4>
+                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                  {comments}
+                </p>
               </div>
             )}
-
-            <div className="mt-4 w-full bg-[#333] rounded-full h-1">
-              <div
-                className={`h-1 rounded-full ${
-                  score >= 70 ? 'bg-green-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${score}%` }}
-              ></div>
-            </div>
-          </>
+          </div>
         ) : (
-          <div className="text-center py-4">
-            <p className="text-muted-foreground mb-3 text-sm">No match analysis available yet.</p>
+          <div className="text-center py-8 space-y-3">
+            <p className="text-sm text-slate-500">No match analysis available yet.</p>
             {onRefreshRequest && (
-              <Button
-                onClick={onRefreshRequest}
-                size="sm"
-                variant="default"
-                className="bg-primary hover:bg-primary/90"
-              >
+              <Button onClick={onRefreshRequest} size="sm">
                 Generate Match Analysis
               </Button>
             )}

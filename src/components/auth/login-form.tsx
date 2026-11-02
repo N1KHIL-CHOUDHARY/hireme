@@ -58,8 +58,10 @@ export function LoginForm({ role, callbackUrl }: LoginFormProps) {
         return;
       }
 
-      // Redirect to unified dashboard
-      router.push(callbackUrl || '/dashboard');
+      // Redirect candidate directly to Explore Jobs, others to dashboard
+      const targetUrl =
+        callbackUrl || (data.role === 'candidate' ? '/dashboard/jobs' : '/dashboard');
+      router.push(targetUrl);
 
       toast.success(t('loginSuccess'));
     } catch (error) {
