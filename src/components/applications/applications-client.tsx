@@ -1,393 +1,509 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { BarChart2, CheckCircle, Eye } from 'lucide-react';
+import {
+  ArrowRight,
+  Bot,
+  Briefcase,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Compass,
+  FileText,
+  Search,
+  Sparkles,
+  XCircle,
+} from 'lucide-react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import * as React from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { DataTable } from '@/components/ui/data-table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Input } from '@/components/ui/input';
+import { MatchScoreBadge, StatusBadge } from '@/components/ui/status-badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Application status type
-export type ApplicationStatus = 'pending' | 'reviewed' | 'accepted' | 'rejected';
+export interface ApplicationJob {
+  title: string;
+  companyName: string;
+  location?: string;
+  urlId?: string;
+}
 
-// Type definition for job application
-export interface JobApplication {
+export interface ApplicationItem {
   _id: string;
+  id?: string;
   jobId: string;
   userId: string;
   fileName: string;
   resumeUrl: string;
-  preferredLanguage: string;
-  status: ApplicationStatus;
-  parsedResume?: {
-    skills: string[];
-    matchScore?: number;
-    aiComments?: string;
-    matchedAt?: string;
-    topSkillMatches?: string[];
-    missingSkills?: string[];
-  };
+  status: string;
   createdAt: string;
   updatedAt: string;
+  interviewState?: {
+    status?: string;
+    completedAt?: string;
+  };
+  interviewEvaluation?: {
+    score?: number;
+    feedback?: string;
+  };
+  parsedResume?: {
+    matchScore?: number;
+    matchedAt?: string;
+    skills?: string[];
+  };
+  job?: ApplicationJob;
 }
 
-// Type definition for job details
-export interface JobDetails {
-  title: string;
-  companyName: string;
-  location: string;
-  urlId: string;
+// Visual status stepper helper
+function ApplicationTimeline({ status }: { status: string }) {
+  const norm = status?.toLowerCase().trim();
+
+  // Determine active step index:
+  // 0 = Applied
+  // 1 = Under Review / Shortlisted
+  // 2 = Interview / Assessment
+  // 3 = Decision (Offered / Rejected / Withdrawn)
+  let currentStep = 0;
+  if (norm === 'under review' || norm === 'under_review' || norm === 'reviewed') {
+    currentStep = 1;
+  } else if (
+    norm === 'shortlisted' ||
+    norm === 'interview scheduled' ||
+    norm === 'interview_scheduled' ||
+    norm === 'assessment'
+  ) {
+    currentStep = 2;
+  } else if (
+    norm === 'offered' ||
+    norm === 'accepted' ||
+    norm === 'rejected' ||
+    norm === 'withdrawn'
+  ) {
+    currentStep = 3;
+  }
+
+  const isRejected = norm === 'rejected';
+  const isWithdrawn = norm === 'withdrawn';
+  const isOffered = norm === 'offered' || norm === 'accepted';
+
+  const steps = [
+    { label: 'Applied' },
+    { label: 'Under Review' },
+    { label: 'Interview' },
+    {
+      label: isRejected
+        ? 'Rejected'
+        : isWithdrawn
+          ? 'Withdrawn'
+          : isOffered
+            ? 'Offered'
+            : 'Decision',
+    },
+  ];
+
+  return (
+    <div className="w-full pt-3 pb-1">
+      <div className="relative flex items-center justify-between">
+        {/* Connecting progress bar */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 w-full bg-slate-200 z-0" />
+        <div
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary transition-all duration-300 z-0"
+          style={{
+            width:
+              currentStep === 0
+                ? '12%'
+                : currentStep === 1
+                  ? '40%'
+                  : currentStep === 2
+                    ? '70%'
+                    : '100%',
+          }}
+        />
+
+        {steps.map((step, idx) => {
+          const isCompleted = idx < currentStep || (idx === currentStep && currentStep === 3);
+          const isCurrent = idx === currentStep;
+
+          let bubbleClasses = 'border-slate-300 bg-white text-slate-400';
+          if (isCurrent && isRejected) {
+            bubbleClasses = 'border-red-500 bg-red-50 text-red-600 ring-2 ring-red-100';
+          } else if (isCurrent && isWithdrawn) {
+            bubbleClasses = 'border-slate-400 bg-slate-100 text-slate-600';
+          } else if (isCurrent && isOffered) {
+            bubbleClasses =
+              'border-emerald-600 bg-emerald-50 text-emerald-600 ring-2 ring-emerald-100';
+          } else if (isCurrent) {
+            bubbleClasses = 'border-primary bg-blue-50 text-primary ring-2 ring-blue-100';
+          } else if (isCompleted) {
+            bubbleClasses = 'border-primary bg-primary text-white';
+          }
+
+          return (
+            <div
+              key={step.label}
+              className="relative z-10 flex flex-col items-center group cursor-default"
+            >
+              <div
+                className={`flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-mono font-semibold transition-colors ${bubbleClasses}`}
+              >
+                {isCompleted && !isCurrent ? (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                ) : isCurrent && isRejected ? (
+                  <XCircle className="h-3.5 w-3.5" />
+                ) : (
+                  idx + 1
+                )}
+              </div>
+              <span
+                className={`mt-1.5 text-[11px] font-medium whitespace-nowrap ${
+                  isCurrent
+                    ? 'text-slate-900 font-semibold'
+                    : isCompleted
+                      ? 'text-slate-700'
+                      : 'text-slate-400'
+                }`}
+              >
+                {step.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function ApplicationsClient() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<ApplicationStatus | 'all'>('all');
+  const [activeTab, setActiveTab] = React.useState<string>('all');
+  const [search, setSearch] = React.useState<string>('');
 
-  // Fetch all applications for the current user
-  const { data: applicationsData, isLoading } = useQuery({
-    queryKey: ['applications', session?.user?.id],
+  const { data, isLoading } = useQuery<{
+    success: boolean;
+    applications: ApplicationItem[];
+  }>({
+    queryKey: ['candidate-applications', session?.user?.id],
     queryFn: async () => {
-      if (!session?.user?.id) return { success: false, applications: [] };
-
-      const response = await fetch(`/api/applications?userId=${session.user.id}`);
-
+      const response = await fetch('/api/applications');
       if (!response.ok) {
         throw new Error('Failed to fetch applications');
       }
-
-      const data = await response.json();
-
-      // Fetch job details for each application
-      const applicationsWithJobDetails = await Promise.all(
-        data.applications.map(async (application: JobApplication) => {
-          try {
-            // Fetch job details by jobId
-            const jobResponse = await fetch(`/api/jobs/${application.jobId}`);
-
-            if (jobResponse.ok) {
-              const jobData = await jobResponse.json();
-              return {
-                ...application,
-                job: {
-                  title: jobData.job.title,
-                  companyName: jobData.job.companyName,
-                  location: jobData.job.location,
-                  urlId: jobData.job.urlId,
-                },
-              };
-            }
-            return {
-              ...application,
-              job: {
-                title: 'Unknown Job',
-                companyName: 'Unknown Company',
-                location: 'Unknown',
-                urlId: '',
-              },
-            };
-          } catch (error) {
-            console.error('Error fetching job details:', error);
-            return {
-              ...application,
-              job: {
-                title: 'Unknown Job',
-                companyName: 'Unknown Company',
-                location: 'Unknown',
-                urlId: '',
-              },
-            };
-          }
-        })
-      );
-
-      return { ...data, applications: applicationsWithJobDetails };
+      return response.json();
     },
     enabled: !!session?.user?.id,
   });
 
-  const applications = applicationsData?.applications || [];
+  const rawApplications = React.useMemo<ApplicationItem[]>(() => {
+    return data?.applications || [];
+  }, [data?.applications]);
 
-  // Filter applications based on active tab
-  const filteredApplications =
-    activeTab === 'all'
-      ? applications
-      : applications.filter(
-          (app: JobApplication & { job: JobDetails }) => app.status === activeTab
-        );
+  // Summary Metrics (restrained and non-dominating)
+  const metrics = React.useMemo(() => {
+    let total = 0;
+    let inReview = 0;
+    let interviews = 0;
+    let offered = 0;
 
-  // Count applications by status
-  const counts = applications.reduce(
-    (acc: Record<string, number>, app: JobApplication) => {
-      acc[app.status] = (acc[app.status] || 0) + 1;
-      return acc;
-    },
-    { all: applications.length }
-  );
+    rawApplications.forEach((app) => {
+      total++;
+      const s = app.status?.toLowerCase().trim();
+      if (s === 'reviewed' || s === 'under review' || s === 'under_review' || s === 'shortlisted') {
+        inReview++;
+      } else if (
+        s === 'interview scheduled' ||
+        s === 'interview_scheduled' ||
+        s === 'assessment' ||
+        app.interviewState?.status === 'completed'
+      ) {
+        interviews++;
+      } else if (s === 'offered' || s === 'accepted') {
+        offered++;
+      }
+    });
 
-  // Define columns for DataTable
-  const columns: ColumnDef<JobApplication & { job: JobDetails }>[] = [
-    {
-      accessorKey: 'job.title',
-      header: 'Job Title',
-    },
-    {
-      accessorKey: 'job.companyName',
-      header: 'Company',
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.getValue('status') as ApplicationStatus;
-        let variant: 'default' | 'outline' | 'secondary' | 'destructive' = 'outline';
+    return { total, inReview, interviews, offered };
+  }, [rawApplications]);
 
-        switch (status) {
-          case 'accepted':
-            variant = 'default'; // Success color
-            break;
-          case 'rejected':
-            variant = 'destructive'; // Error color
-            break;
-          case 'reviewed':
-            variant = 'secondary'; // Neutral color
-            break;
-          case 'pending':
-            variant = 'outline'; // Default outline
-            break;
-          default:
-            variant = 'outline';
-        }
+  // Filter applications by tab and search
+  const filteredApplications = React.useMemo(() => {
+    return rawApplications.filter((app) => {
+      const statusNorm = app.status?.toLowerCase().trim();
+      const jobTitle = app.job?.title?.toLowerCase() || '';
+      const company = app.job?.companyName?.toLowerCase() || '';
+      const query = search.toLowerCase();
 
-        return <Badge variant={variant}>{status}</Badge>;
-      },
-    },
-    {
-      accessorKey: 'parsedResume.matchScore',
-      header: 'Match Score',
-      sortingFn: (rowA, rowB) => {
-        const scoreA = rowA.original.parsedResume?.matchScore || 0;
-        const scoreB = rowB.original.parsedResume?.matchScore || 0;
-        return scoreB - scoreA; // Sort in descending order (highest first)
-      },
-      cell: ({ row }) => {
-        const application = row.original;
-        const matchScore = application.parsedResume?.matchScore;
+      // Search matching
+      if (query && !jobTitle.includes(query) && !company.includes(query)) {
+        return false;
+      }
 
-        if (matchScore === undefined)
-          return <span className="text-muted-foreground text-sm">Not analyzed</span>;
-
-        let badgeColor = '';
-        let statusIcon = '';
-
-        if (matchScore >= 70) {
-          badgeColor = 'bg-green-100 text-green-800 border-green-300';
-          statusIcon = '✓';
-        } else if (matchScore >= 50) {
-          badgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
-          statusIcon = '◐';
-        } else {
-          badgeColor = 'bg-red-100 text-red-800 border-red-300';
-          statusIcon = '✗';
-        }
-
+      // Tab matching
+      if (activeTab === 'all') return true;
+      if (activeTab === 'active') {
         return (
-          <div className="flex items-center gap-2">
-            <div className="w-[52px] flex-shrink-0">
-              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${
-                    matchScore >= 70
-                      ? 'bg-green-500'
-                      : matchScore >= 50
-                        ? 'bg-amber-500'
-                        : 'bg-red-500'
-                  }`}
-                  style={{ width: `${matchScore}%` }}
-                />
-              </div>
-            </div>
-            <span
-              className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${badgeColor}`}
-            >
-              {statusIcon} {matchScore}%
-            </span>
-          </div>
+          statusNorm === 'pending' ||
+          statusNorm === 'applied' ||
+          statusNorm === 'under review' ||
+          statusNorm === 'under_review' ||
+          statusNorm === 'reviewed'
         );
-      },
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Applied Date',
-      cell: ({ row }) => {
-        const date = new Date(row.getValue('createdAt'));
-        return <span>{format(date, 'PPP')}</span>;
-      },
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const application = row.original;
+      }
+      if (activeTab === 'interviews') {
         return (
-          <div className="flex space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(`/dashboard/jobs/${application.job.urlId}`, '_blank')}
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              View Job
-            </Button>
-            <Button
-              variant={application.parsedResume?.matchScore !== undefined ? 'outline' : 'secondary'}
-              size="sm"
-              onClick={() => window.open(`/dashboard/applications/${application._id}`, '_blank')}
-              className={
-                application.parsedResume?.matchScore !== undefined
-                  ? application.parsedResume.matchScore >= 70
-                    ? 'text-green-600 hover:text-green-700'
-                    : application.parsedResume.matchScore >= 50
-                      ? 'text-amber-600 hover:text-amber-700'
-                      : 'text-red-600 hover:text-red-700'
-                  : ''
-              }
-            >
-              {application.parsedResume?.matchScore !== undefined ? (
-                <>
-                  <BarChart2 className="h-4 w-4 mr-1" />
-                  View Analysis
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Analyze Resume
-                </>
-              )}
-            </Button>
-          </div>
+          statusNorm === 'shortlisted' ||
+          statusNorm === 'interview scheduled' ||
+          statusNorm === 'interview_scheduled' ||
+          statusNorm === 'assessment' ||
+          app.interviewState?.status === 'completed'
         );
-      },
-    },
-  ];
+      }
+      if (activeTab === 'decision') {
+        return (
+          statusNorm === 'offered' ||
+          statusNorm === 'accepted' ||
+          statusNorm === 'rejected' ||
+          statusNorm === 'withdrawn'
+        );
+      }
+      return true;
+    });
+  }, [rawApplications, activeTab, search]);
 
-  if (!session) {
-    return (
-      <div className="container mx-auto py-6 text-center">
-        <p>Please sign in to view your applications.</p>
-      </div>
-    );
-  }
+  const getCompanyInitial = (name?: string) => {
+    return name?.trim() ? name.trim().charAt(0).toUpperCase() : 'C';
+  };
 
   return (
-    <Card>
-      <Tabs
-        defaultValue="all"
-        onValueChange={(value) => setActiveTab(value as ApplicationStatus | 'all')}
-      >
-        <TabsList className="grid grid-cols-5 mb-8">
-          <TabsTrigger value="all">
-            All
-            {counts.all > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {counts.all}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="pending">
-            Pending
-            {(counts.pending || 0) > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {counts.pending}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="reviewed">
-            Reviewed
-            {(counts.reviewed || 0) > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {counts.reviewed}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="accepted">
-            Accepted
-            {(counts.accepted || 0) > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {counts.accepted}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="rejected">
-            Rejected
-            {(counts.rejected || 0) > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {counts.rejected}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+    <div className="space-y-6">
+      {/* Non-dominating Summary Metrics bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">Total Applied</span>
+            <FileText className="h-4 w-4 text-slate-400" />
+          </div>
+          <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900">
+            {metrics.total}
+          </div>
+        </div>
 
-        <TabsContent value="all" className="p-4">
-          <DataTable columns={columns} data={filteredApplications} isLoading={isLoading} />
-          {!isLoading && filteredApplications.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-muted-foreground mb-4">
-                You haven&apos;t applied to any jobs yet.
-              </p>
-              <Button onClick={() => (window.location.href = '/dashboard/jobs')}>
-                Browse Available Jobs
+        <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">In Review</span>
+            <Clock className="h-4 w-4 text-amber-500" />
+          </div>
+          <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900">
+            {metrics.inReview}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">Interviews</span>
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900">
+            {metrics.interviews}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">Offers</span>
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          </div>
+          <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900">
+            {metrics.offered}
+          </div>
+        </div>
+      </div>
+
+      {/* Filter and Search Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
+          <TabsList className="bg-slate-100 p-1 rounded-md">
+            <TabsTrigger value="all" className="text-xs">
+              All ({metrics.total})
+            </TabsTrigger>
+            <TabsTrigger value="active" className="text-xs">
+              Active ({metrics.inReview})
+            </TabsTrigger>
+            <TabsTrigger value="interviews" className="text-xs">
+              Interviews ({metrics.interviews})
+            </TabsTrigger>
+            <TabsTrigger value="decision" className="text-xs">
+              Decisions ({metrics.offered})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Input
+            placeholder="Search by job or company..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9 text-xs bg-white border-slate-200"
+          />
+        </div>
+      </div>
+
+      {/* Applications List */}
+      {isLoading ? (
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="h-44 border-slate-200 bg-white animate-pulse" />
+          ))}
+        </div>
+      ) : filteredApplications.length === 0 ? (
+        <EmptyState
+          icon={<Briefcase className="h-8 w-8 text-slate-400" />}
+          title={
+            rawApplications.length === 0
+              ? 'No applications submitted yet'
+              : 'No matching applications found'
+          }
+          description={
+            rawApplications.length === 0
+              ? 'Find career opportunities that align with your background and apply directly with AI-guided match benchmarking.'
+              : 'Try clearing your search query or switching to another status tab.'
+          }
+          action={
+            rawApplications.length === 0 ? (
+              <Link href="/dashboard/jobs">
+                <Button size="sm" className="gap-1.5">
+                  <Compass className="h-4 w-4" />
+                  <span>Explore Open Jobs</span>
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setSearch('')}>
+                Clear search
               </Button>
-            </div>
-          )}
-        </TabsContent>
+            )
+          }
+        />
+      ) : (
+        <div className="space-y-4">
+          {filteredApplications.map((app) => {
+            const appId = app._id || app.id || '';
+            const appDate = app.createdAt
+              ? format(new Date(app.createdAt), 'MMM dd, yyyy')
+              : 'Recent';
 
-        <TabsContent value="pending" className="p-4">
-          <DataTable columns={columns} data={filteredApplications} isLoading={isLoading} />
-          {!isLoading && filteredApplications.length === 0 && (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground">You don&apos;t have any pending applications.</p>
-            </div>
-          )}
-        </TabsContent>
+            const jobTitle = app.job?.title || 'Position';
+            const companyName = app.job?.companyName || 'Company';
+            const matchScore = app.parsedResume?.matchScore;
+            const hasInterview =
+              app.interviewState?.status === 'completed' || !!app.interviewEvaluation;
 
-        <TabsContent value="reviewed" className="p-4">
-          <DataTable columns={columns} data={filteredApplications} isLoading={isLoading} />
-          {!isLoading && filteredApplications.length === 0 && (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground">
-                You don&apos;t have any reviewed applications.
-              </p>
-            </div>
-          )}
-        </TabsContent>
+            return (
+              <Card
+                key={appId}
+                className="border-slate-200 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-slate-300 transition-colors rounded-lg overflow-hidden"
+              >
+                <CardHeader className="p-5 pb-3 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {/* Company Avatar / Logo */}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-slate-100 border border-slate-200 text-slate-800 font-semibold text-base font-mono">
+                        {getCompanyInitial(companyName)}
+                      </div>
 
-        <TabsContent value="accepted" className="p-4">
-          <DataTable columns={columns} data={filteredApplications} isLoading={isLoading} />
-          {!isLoading && filteredApplications.length === 0 && (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground">
-                You don&apos;t have any accepted applications.
-              </p>
-            </div>
-          )}
-        </TabsContent>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-semibold text-slate-900 leading-tight">
+                            {jobTitle}
+                          </h3>
+                          {matchScore !== undefined && (
+                            <MatchScoreBadge score={matchScore} size="sm" showLabel />
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-xs text-slate-600 font-medium">
+                          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                          <span>{companyName}</span>
+                          <span className="text-slate-300">•</span>
+                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                          <span className="font-mono tabular-nums">Applied {appDate}</span>
+                        </div>
+                      </div>
+                    </div>
 
-        <TabsContent value="rejected" className="p-4">
-          <DataTable columns={columns} data={filteredApplications} isLoading={isLoading} />
-          {!isLoading && filteredApplications.length === 0 && (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground">
-                You don&apos;t have any rejected applications.
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </Card>
+                    <div className="flex items-center gap-2 self-start sm:self-center">
+                      <StatusBadge status={app.status} />
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-5 space-y-4">
+                  {/* Status Timeline */}
+                  <div>
+                    <span className="text-xs text-slate-500 font-medium block mb-1">
+                      Application Progress
+                    </span>
+                    <ApplicationTimeline status={app.status} />
+                  </div>
+
+                  {/* Interview & Evaluation Details Callout */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 bg-slate-50/50 -mx-5 -mb-5 p-4 rounded-b-lg">
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <Bot className="h-4 w-4 text-primary shrink-0" />
+                      {hasInterview ? (
+                        <span>
+                          <strong className="text-slate-900 font-semibold">
+                            AI Interview Completed:
+                          </strong>{' '}
+                          {app.interviewEvaluation?.score
+                            ? `Evaluation Score ${Math.round(app.interviewEvaluation.score)}%`
+                            : 'Transcript and feedback ready'}
+                        </span>
+                      ) : (
+                        <span>
+                          <strong className="text-slate-900 font-semibold">
+                            Interview Status:
+                          </strong>{' '}
+                          Ready for interview simulation and skill verification
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {hasInterview ? (
+                        <Link href={`/dashboard/applications/${appId}/interview/feedback`}>
+                          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
+                            <span>View Interview Feedback</span>
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href={`/dashboard/applications/${appId}/interview`}>
+                          <Button size="sm" className="h-8 text-xs gap-1.5">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            <span>Start AI Interview</span>
+                          </Button>
+                        </Link>
+                      )}
+
+                      <Link href={`/dashboard/applications/${appId}`}>
+                        <Button size="sm" variant="ghost" className="h-8 text-xs gap-1">
+                          <span>Details</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,7 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Brain, Briefcase, CheckCircle, Code, GraduationCap, Loader2, User } from 'lucide-react';
+import {
+  ArrowRight,
+  Brain,
+  Briefcase,
+  CheckCircle,
+  Code,
+  GraduationCap,
+  Loader2,
+  User,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -13,27 +22,26 @@ import { IJobApplication } from '@/models/job-application';
 
 // Animation variants
 const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.25,
       when: 'beforeChildren',
-      staggerChildren: 0.1,
+      staggerChildren: 0.05,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring',
-      stiffness: 200,
-      damping: 20,
+      duration: 0.2,
+      ease: 'easeOut',
     },
   },
 };
@@ -106,313 +114,277 @@ export function ResumeAnalysis({ applicationId }: ResumeAnalysisProps) {
   if (error) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <Card className="p-4 border-none bg-[#121212]">
-          <div className="text-center">
-            <motion.h1
-              className="text-xl font-bold mb-3"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-            >
-              Resume Analysis Failed
-            </motion.h1>
-            <motion.p
-              className="text-muted-foreground mb-4"
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              {error}
-            </motion.p>
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Button onClick={() => router.back()}>Go Back</Button>
-            </motion.div>
-          </div>
+        <Card className="p-8 border-red-200 bg-red-50/40 text-center max-w-lg mx-auto">
+          <h2 className="text-xl font-bold text-red-900 mb-2">Resume Analysis Failed</h2>
+          <p className="text-sm text-red-700 mb-6">{error}</p>
+          <Button variant="outline" onClick={() => router.back()}>
+            Go Back
+          </Button>
         </Card>
       </motion.div>
     );
   }
 
+  const score = application?.parsedResume?.matchScore ?? 0;
+
   return (
     <motion.div initial="hidden" animate="visible" variants={containerVariants}>
-      <Card className="border-none bg-[#121212] shadow-none overflow-hidden">
-        <CardHeader className="text-center py-6 px-4">
-          <motion.h1 className="text-2xl font-bold mb-3" variants={itemVariants}>
-            Resume Analysis
+      <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
+        <CardHeader className="text-center py-6 px-6 border-b border-slate-100">
+          <motion.h1
+            className="text-2xl font-bold tracking-tight text-slate-900"
+            variants={itemVariants}
+          >
+            Resume Screening Analysis
           </motion.h1>
+          <p className="text-xs text-slate-500 mt-1">
+            AI-powered breakdown of your background against the position requirements
+          </p>
         </CardHeader>
 
-        <CardContent className="px-0 py-4 flex flex-col items-center">
+        <CardContent className="p-6">
           {isLoading ? (
             <motion.div
-              className="flex flex-col items-center justify-center py-8"
+              className="flex flex-col items-center justify-center py-16"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              >
-                <Loader2 className="h-12 w-12 text-primary mb-4" />
-              </motion.div>
-              <motion.p
-                className="text-lg font-medium"
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                Processing your resume...
-              </motion.p>
-              <motion.p
-                className="text-muted-foreground mt-2 text-sm"
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                This may take a few moments
-              </motion.p>
+              <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+              <p className="text-base font-semibold text-slate-900">Processing your resume...</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Extracting technical skills, experiences, and match scoring
+              </p>
             </motion.div>
           ) : (
-            <motion.div className="w-full" variants={containerVariants}>
+            <motion.div className="space-y-6" variants={containerVariants}>
               <motion.div
-                className="flex items-center justify-center mb-6 gap-2"
+                className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-50 border border-green-200/60 text-green-800"
                 variants={itemVariants}
               >
-                <CheckCircle className="h-8 w-8 text-green-500" />
-                <h2 className="text-xl font-medium">Analysis Complete!</h2>
+                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-medium">Resume Analysis Complete</span>
               </motion.div>
 
-              <div className="w-full space-y-6 mb-6 max-w-4xl mx-auto px-4">
-                {/* Match Score Row */}
-                <motion.div variants={itemVariants}>
-                  <Card className="p-6 border-none bg-[#1c1c1c] shadow-none hover:bg-[#242424] transition-colors">
-                    <div className="w-full">
-                      <h3 className="text-base font-medium mb-4">Match Score</h3>
-                      <div className="flex items-center gap-8">
+              {/* Match Score Card */}
+              <motion.div variants={itemVariants}>
+                <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-6">
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-4">
+                    Position Match Score
+                  </h3>
+                  <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <div
+                      className={`text-5xl font-bold font-mono tabular-nums ${
+                        score >= 70
+                          ? 'text-green-600'
+                          : score >= 50
+                            ? 'text-amber-600'
+                            : 'text-red-600'
+                      }`}
+                    >
+                      {score}%
+                    </div>
+                    <div className="flex-1 w-full space-y-2">
+                      <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
                         <div
-                          className={`text-5xl font-bold ${
-                            (application?.parsedResume?.matchScore ?? 0) >= 70
-                              ? 'text-green-500'
-                              : (application?.parsedResume?.matchScore ?? 0) >= 50
-                                ? 'text-yellow-500'
-                                : 'text-red-500'
-                          }`}
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{
+                            width: `${score}%`,
+                            backgroundColor:
+                              score >= 70 ? '#16A34A' : score >= 50 ? '#D97706' : '#DC2626',
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-slate-500 font-mono tabular-nums">
+                        Last analyzed:{' '}
+                        {application?.parsedResume?.analyzedAt
+                          ? new Date(application.parsedResume.analyzedAt).toLocaleDateString()
+                          : 'Recent'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* About Candidate */}
+              <motion.div variants={itemVariants}>
+                <div className="rounded-lg border border-slate-200 bg-white p-5 flex items-start gap-4">
+                  <div className="h-9 w-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900">Summary</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+                      {application?.parsedResume?.about ?? 'No summary information extracted'}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Skills */}
+              <motion.div variants={itemVariants}>
+                <div className="rounded-lg border border-slate-200 bg-white p-5 flex items-start gap-4">
+                  <div className="h-9 w-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
+                    <Code className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900">Extracted Skills</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(application?.parsedResume?.skills ?? []).map((skill, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs font-normal bg-slate-100 text-slate-700 border-slate-200"
                         >
-                          {application?.parsedResume?.matchScore ?? 0}%
+                          {skill}
+                        </Badge>
+                      ))}
+                      {(!application?.parsedResume?.skills ||
+                        application.parsedResume.skills.length === 0) && (
+                        <p className="text-xs text-slate-500">No specific skills identified</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Experience */}
+              <motion.div variants={itemVariants}>
+                <div className="rounded-lg border border-slate-200 bg-white p-5 flex items-start gap-4">
+                  <div className="h-9 w-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900">Experience</h3>
+                    {(application?.parsedResume?.experience?.years ?? 0) > 0 ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center text-slate-900">
+                          <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
+                            {application?.parsedResume?.experience?.years}
+                          </span>
+                          <span className="ml-2 text-xs text-slate-500">
+                            years of professional experience
+                          </span>
                         </div>
-                        <div className="flex-1">
-                          <div className="h-3 bg-[#2a2a2a] rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all"
-                              style={{
-                                width: `${application?.parsedResume?.matchScore ?? 0}%`,
-                                backgroundColor:
-                                  (application?.parsedResume?.matchScore ?? 0) >= 70
-                                    ? 'rgb(34, 197, 94)'
-                                    : (application?.parsedResume?.matchScore ?? 0) >= 50
-                                      ? 'rgb(251, 191, 36)'
-                                      : 'rgb(239, 68, 68)',
-                              }}
-                            />
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Last analyzed:{' '}
-                            {application?.parsedResume?.analyzedAt
-                              ? new Date(application.parsedResume.analyzedAt).toLocaleDateString()
-                              : 'Not yet analyzed'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                {/* About Row */}
-                <motion.div variants={itemVariants}>
-                  <Card className="p-6 border-none bg-[#1c1c1c] shadow-none hover:bg-[#242424] transition-colors">
-                    <div className="flex items-start gap-4">
-                      <User className="h-6 w-6 text-purple-400 flex-shrink-0" />
-                      <div className="w-full">
-                        <h3 className="text-base font-medium mb-3">About Candidate</h3>
-                        <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                          {application?.parsedResume?.about ?? 'No summary information available'}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                {/* Skills Row */}
-                <motion.div variants={itemVariants}>
-                  <Card className="p-6 border-none bg-[#1c1c1c] shadow-none hover:bg-[#242424] transition-colors">
-                    <div className="flex items-start gap-4">
-                      <Code className="h-6 w-6 text-blue-400 flex-shrink-0" />
-                      <div className="w-full">
-                        <h3 className="text-base font-medium mb-3">Skills</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {(application?.parsedResume?.skills ?? []).map((skill, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="text-sm py-1 px-3 bg-[#2a2a2a] border-[#404040] text-[#f1f1f1] font-medium"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
-                          {(!application?.parsedResume?.skills ||
-                            application.parsedResume.skills.length === 0) && (
-                            <p className="text-sm text-muted-foreground">
-                              No specific skills identified
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                {/* Experience Row */}
-                <motion.div variants={itemVariants}>
-                  <Card className="p-6 border-none bg-[#1c1c1c] shadow-none hover:bg-[#242424] transition-colors">
-                    <div className="flex items-start gap-4">
-                      <Briefcase className="h-6 w-6 text-yellow-400 flex-shrink-0" />
-                      <div className="w-full">
-                        <h3 className="text-base font-medium mb-3">Experience</h3>
-                        {(application?.parsedResume?.experience?.years ?? 0) > 0 ? (
-                          <div className="space-y-4">
-                            <div className="flex items-center">
-                              <span className="text-2xl font-bold text-white">
-                                {application?.parsedResume?.experience?.years}
-                              </span>
-                              <span className="ml-2 text-sm text-muted-foreground">
-                                years of professional experience
-                              </span>
-                            </div>
-                            {(application?.parsedResume?.experience?.companies?.length ?? 0) >
-                              0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {(application?.parsedResume?.experience?.companies ?? []).map(
-                                  (company, index) => (
-                                    <Badge
-                                      key={index}
-                                      variant="outline"
-                                      className="text-sm py-1 px-3 bg-[#2a2a2a] border-[#404040] text-[#f1f1f1] font-medium"
-                                    >
-                                      {company}
-                                    </Badge>
-                                  )
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">
-                            No experience details found
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                {/* Education Row */}
-                <motion.div variants={itemVariants}>
-                  <Card className="p-6 border-none bg-[#1c1c1c] shadow-none hover:bg-[#242424] transition-colors">
-                    <div className="flex items-start gap-4">
-                      <GraduationCap className="h-6 w-6 text-green-400 flex-shrink-0" />
-                      <div className="w-full">
-                        <h3 className="text-base font-medium mb-3">Education</h3>
-                        {(application?.parsedResume?.education?.length ?? 0) > 0 ? (
-                          <div className="space-y-4">
-                            {(application?.parsedResume?.education ?? []).map((edu, index) => (
-                              <div key={index} className="border-l-2 border-[#2a2a2a] pl-4 py-1">
-                                <p className="text-sm font-medium mb-1">{edu.degree}</p>
-                                <p className="text-sm text-muted-foreground">{edu.institution}</p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">
-                            No education information found
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                {/* AI Analysis Row */}
-                <motion.div variants={itemVariants}>
-                  <Card className="p-6 border-none bg-[#1c1c1c] shadow-none hover:bg-[#242424] transition-colors">
-                    <div className="flex items-start gap-4">
-                      <Brain className="h-6 w-6 text-indigo-400 flex-shrink-0" />
-                      <div className="w-full">
-                        <h3 className="text-base font-medium mb-3">AI Analysis</h3>
-                        <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                          {application?.parsedResume?.aiComments ?? 'No AI analysis available'}
-                        </p>
-
-                        {/* Skills Analysis */}
-                        {((application?.parsedResume?.topSkillMatches?.length ?? 0) > 0 ||
-                          (application?.parsedResume?.missingSkills?.length ?? 0) > 0) && (
-                          <div className="mt-6 space-y-4">
-                            {(application?.parsedResume?.topSkillMatches?.length ?? 0) > 0 && (
-                              <div>
-                                <p className="text-sm font-medium mb-2">Top Matching Skills:</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {(application?.parsedResume?.topSkillMatches ?? []).map(
-                                    (skill, index) => (
-                                      <Badge
-                                        key={index}
-                                        variant="outline"
-                                        className="text-sm py-1 px-3 bg-[#2a2a2a] border-[#404040] text-green-400 font-medium"
-                                      >
-                                        {skill}
-                                      </Badge>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {(application?.parsedResume?.missingSkills?.length ?? 0) > 0 && (
-                              <div>
-                                <p className="text-sm font-medium mb-2">Missing Skills:</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {(application?.parsedResume?.missingSkills ?? []).map(
-                                    (skill, index) => (
-                                      <Badge
-                                        key={index}
-                                        variant="outline"
-                                        className="text-sm py-1 px-3 bg-[#2a2a2a] border-[#404040] text-red-400 font-medium"
-                                      >
-                                        {skill}
-                                      </Badge>
-                                    )
-                                  )}
-                                </div>
-                              </div>
+                        {(application?.parsedResume?.experience?.companies?.length ?? 0) > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {(application?.parsedResume?.experience?.companies ?? []).map(
+                              (company, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="outline"
+                                  className="text-xs font-normal text-slate-600 border-slate-200"
+                                >
+                                  {company}
+                                </Badge>
+                              )
                             )}
                           </div>
                         )}
                       </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              </div>
+                    ) : (
+                      <p className="text-xs text-slate-500">No experience details found</p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
 
-              <motion.div className="w-full px-6" variants={itemVariants}>
+              {/* Education */}
+              <motion.div variants={itemVariants}>
+                <div className="rounded-lg border border-slate-200 bg-white p-5 flex items-start gap-4">
+                  <div className="h-9 w-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
+                    <GraduationCap className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900">Education</h3>
+                    {(application?.parsedResume?.education?.length ?? 0) > 0 ? (
+                      <div className="space-y-2.5">
+                        {(application?.parsedResume?.education ?? []).map((edu, index) => (
+                          <div key={index} className="border-l-2 border-primary/40 pl-3 py-0.5">
+                            <p className="text-xs font-semibold text-slate-900">{edu.degree}</p>
+                            <p className="text-xs text-slate-500">{edu.institution}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500">No education information found</p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* AI Analysis & Skill Matches */}
+              <motion.div variants={itemVariants}>
+                <div className="rounded-lg border border-slate-200 bg-white p-5 flex items-start gap-4">
+                  <div className="h-9 w-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0">
+                    <Brain className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-4 flex-1 min-w-0">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-1.5">
+                        AI Fit Assessment
+                      </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+                        {application?.parsedResume?.aiComments ?? 'No AI comments available'}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                      {(application?.parsedResume?.topSkillMatches?.length ?? 0) > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                            Matching Skills
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {(application?.parsedResume?.topSkillMatches ?? []).map(
+                              (skill, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="text-xs font-normal bg-green-50 text-green-700 border-green-200"
+                                >
+                                  {skill}
+                                </Badge>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {(application?.parsedResume?.missingSkills?.length ?? 0) > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                            Missing Skills
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {(application?.parsedResume?.missingSkills ?? []).map(
+                              (skill, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="outline"
+                                  className="text-xs font-normal bg-red-50/60 text-red-700 border-red-200"
+                                >
+                                  {skill}
+                                </Badge>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Action Button */}
+              <motion.div className="pt-4" variants={itemVariants}>
                 <Button
                   onClick={handleContinue}
-                  className="w-full bg-neutral-200 text-neutral-900 hover:bg-neutral-300 font-medium py-6"
+                  className="w-full gap-2 h-11 text-sm font-medium"
                   size="lg"
                 >
-                  Continue to Interview
+                  Continue to Virtual Interview
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
             </motion.div>
