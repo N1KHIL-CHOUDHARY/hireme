@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 
 import { ApplicationsClient } from '@/components/applications/applications-client';
+import { PageHeader } from '@/components/ui/page-header';
 
 export const metadata: Metadata = {
   title: 'My Applications | Candidate Dashboard | Hirelytics',
@@ -9,11 +10,11 @@ export const metadata: Metadata = {
 
 export default function CandidateApplicationsPage() {
   return (
-    <div className="container mx-auto py-6 space-y-8">
-      <div className="flex flex-col">
-        <h1 className="text-3xl font-bold tracking-tight">My Applications</h1>
-        <p className="text-muted-foreground mt-1">Track and manage all your job applications</p>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="My Applications"
+        description="Track the status and progress of all your job submissions"
+      />
 
       <ApplicationsClient />
     </div>
