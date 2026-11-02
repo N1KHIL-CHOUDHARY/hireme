@@ -3,19 +3,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { CheckCircle, Eye, XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { Building2, Eye, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { UserDetails } from '@/components/admin/user-details';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { DataTable } from '@/components/ui/data-table';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
+import { PageHeader } from '@/components/ui/page-header';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { UserRole } from '@/models/user';
 
-// Define user type
 interface User {
   id: string;
   name: string;
@@ -25,8 +26,7 @@ interface User {
   createdAt: string;
 }
 
-export default function UsersPage() {
-  const t = useTranslations('Dashboard');
+export default function RecruitersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [page, setPage] = useState(0);
@@ -34,7 +34,7 @@ export default function UsersPage() {
   const [searchQuery] = useState('');
 
   // Fetch users with role filter, pagination, and search
-  const { data, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['recruiter', page, pageSize, searchQuery],
     queryFn: async () => {
       const searchParam = searchQuery ? `&search=${searchQuery}` : '';
@@ -43,7 +43,7 @@ export default function UsersPage() {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error('Failed to fetch recruiters');
       }
 
       return response.json();
@@ -54,11 +54,31 @@ export default function UsersPage() {
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: 'Recruiter Name',
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-blue-50 flex items-center justify-center text-primary flex-shrink-0">
+              <Building2 className="h-4 w-4" />
+            </div>
+            <span className="font-medium text-slate-900">{user.name}</span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: 'Email Address',
+      cell: ({ row }) => {
+        const email = row.getValue('email') as string;
+        return (
+          <div className="flex items-center gap-1.5 text-slate-600">
+            <Mail className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-xs font-mono tabular-nums">{email}</span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'role',
@@ -67,9 +87,8 @@ export default function UsersPage() {
         const role = row.getValue('role') as UserRole;
         return (
           <Badge
-            variant={
-              role === 'admin' ? 'destructive' : role === 'recruiter' ? 'default' : 'secondary'
-            }
+            variant="secondary"
+            className="text-xs font-normal bg-slate-100 text-slate-700 border-slate-200 capitalize"
           >
             {role}
           </Badge>
@@ -78,51 +97,49 @@ export default function UsersPage() {
     },
     {
       accessorKey: 'isActive',
-      header: 'Status',
+      header: 'Account Status',
       cell: ({ row }) => {
         const isActive = row.getValue('isActive') as boolean;
-        return (
-          <Badge variant={isActive ? 'default' : 'outline'}>
-            {isActive ? (
-              <CheckCircle className="h-4 w-4 mr-1" />
-            ) : (
-              <XCircle className="h-4 w-4 mr-1" />
-            )}
-            {isActive ? 'Active' : 'Inactive'}
-          </Badge>
-        );
+        return <StatusBadge status={isActive ? 'active' : 'inactive'} />;
       },
     },
     {
       accessorKey: 'createdAt',
-      header: 'Created At',
+      header: 'Registered On',
       cell: ({ row }) => {
         const date = new Date(row.getValue('createdAt'));
-        return <span>{format(date, 'PPP')}</span>;
+        return (
+          <span className="font-mono text-xs tabular-nums text-slate-600">
+            {format(date, 'MMM dd, yyyy')}
+          </span>
+        );
       },
     },
     {
       id: 'actions',
+      header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
         const user = row.original;
         return (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSelectedUser(user);
-              setIsDrawerOpen(true);
-            }}
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            View
-          </Button>
+          <div className="text-right">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1"
+              onClick={() => {
+                setSelectedUser(user);
+                setIsDrawerOpen(true);
+              }}
+            >
+              <Eye className="h-3.5 w-3.5 text-slate-500" />
+              View Details
+            </Button>
+          </div>
         );
       },
     },
   ];
 
-  // Handle user status toggle
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -138,7 +155,6 @@ export default function UsersPage() {
         throw new Error(error.error || 'Failed to update user status');
       }
 
-      // Refetch users to update the table
       refetch();
       toast.success(`User ${isActive ? 'disabled' : 'enabled'} successfully`);
     } catch (error: Error | unknown) {
@@ -149,27 +165,30 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">{t('userManagement')}</h1>
-        <p className="text-muted-foreground">{t('manageUsers')}</p>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={data?.users || []}
-        searchKey="name"
-        searchPlaceholder="Search users..."
-        pagination={{
-          pageIndex: page,
-          pageSize: pageSize,
-          pageCount: data?.pagination?.totalPages || 1,
-          onPageChange: setPage,
-          onPageSizeChange: setPageSize,
-        }}
+      <PageHeader
+        title="Recruiter Directory"
+        description="View verified recruiters, company affiliations, and posting status"
       />
 
+      <Card className="p-4 sm:p-6 bg-white border-slate-200 shadow-sm">
+        <DataTable
+          columns={columns}
+          data={data?.users || []}
+          searchKey="name"
+          searchPlaceholder="Search recruiters by name..."
+          pagination={{
+            pageIndex: page,
+            pageSize: pageSize,
+            pageCount: data?.pagination?.totalPages || 1,
+            onPageChange: setPage,
+            onPageSizeChange: setPageSize,
+          }}
+          isLoading={isLoading}
+        />
+      </Card>
+
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="max-h-[90vh] overflow-auto">
+        <DrawerContent className="max-h-[90vh] overflow-auto bg-white border-slate-200">
           {selectedUser && (
             <UserDetails
               user={selectedUser}
