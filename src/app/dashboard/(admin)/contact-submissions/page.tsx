@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { Calendar, CheckCircle, Mail, Trash2 } from 'lucide-react';
+import { CheckCircle, Eye, Mail, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { DataTable } from '@/components/ui/data-table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PageHeader } from '@/components/ui/page-header';
 
 interface Contact {
   _id: string;
@@ -104,38 +106,33 @@ export default function ContactSubmissionsPage() {
   const columns: ColumnDef<Contact>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: 'Sender Name',
       cell: ({ row }) => {
         const name = row.getValue('name') as string;
-        return (
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{name}</span>
-          </div>
-        );
+        return <span className="font-medium text-slate-900">{name}</span>;
       },
     },
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: 'Email Address',
       cell: ({ row }) => {
         const email = row.getValue('email') as string;
         return (
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{email}</span>
+          <div className="flex items-center gap-1.5 text-slate-600">
+            <Mail className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-xs font-mono tabular-nums">{email}</span>
           </div>
         );
       },
     },
     {
       accessorKey: 'message',
-      header: 'Message',
+      header: 'Message Preview',
       cell: ({ row }) => {
         const message = row.getValue('message') as string;
         return (
           <div className="max-w-xs">
-            <p className="text-sm text-muted-foreground truncate" title={message}>
+            <p className="text-xs text-slate-600 truncate" title={message}>
               {message}
             </p>
           </div>
@@ -148,21 +145,31 @@ export default function ContactSubmissionsPage() {
       cell: ({ row }) => {
         const date = row.getValue('createdAt') as string;
         return (
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{format(new Date(date), 'MMM dd, yyyy')}</span>
-          </div>
+          <span className="font-mono text-xs tabular-nums text-slate-600">
+            {format(new Date(date), 'MMM dd, yyyy')}
+          </span>
         );
       },
     },
     {
       accessorKey: 'isResolved',
-      header: 'Status',
+      header: 'Resolution Status',
       cell: ({ row }) => {
         const isResolved = row.getValue('isResolved') as boolean;
         return (
-          <Badge variant={isResolved ? 'default' : 'secondary'} className="flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
+          <Badge
+            variant="outline"
+            className={
+              isResolved
+                ? 'bg-green-50 text-green-700 border-green-200 text-xs font-normal'
+                : 'bg-amber-50 text-amber-700 border-amber-200 text-xs font-normal'
+            }
+          >
+            <span
+              className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
+                isResolved ? 'bg-green-600' : 'bg-amber-500'
+              }`}
+            />
             {isResolved ? 'Resolved' : 'Pending'}
           </Badge>
         );
@@ -170,27 +177,41 @@ export default function ContactSubmissionsPage() {
     },
     {
       id: 'actions',
+      header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
         const contact = row.original;
         return (
-          <div className="flex space-x-2">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedContact(contact)}>
-              <Mail className="h-4 w-4" />
+          <div className="flex items-center justify-end space-x-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-500 hover:text-slate-900"
+              onClick={() => setSelectedContact(contact)}
+              title="View full message"
+            >
+              <Eye className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
+              className={`h-8 w-8 ${
+                contact.isResolved
+                  ? 'text-slate-400 hover:text-slate-700'
+                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+              }`}
               onClick={() => handleToggleResolved(contact._id, contact.isResolved)}
+              title={contact.isResolved ? 'Mark as pending' : 'Mark as resolved'}
             >
-              <CheckCircle className="h-4 w-4" />
+              <CheckCircle className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => handleDelete(contact._id)}
-              className="text-destructive hover:text-destructive/90"
+              className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+              title="Delete submission"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
         );
@@ -201,67 +222,80 @@ export default function ContactSubmissionsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Contact Form Submissions</h1>
-          <p className="text-muted-foreground">Manage and respond to contact form submissions</p>
-        </div>
-        <div className="flex items-center justify-center py-8">
-          <p className="text-red-500">Failed to load contact submissions</p>
-        </div>
+        <PageHeader
+          title="Contact Form Submissions"
+          description="Manage and respond to user messages and inquiries"
+        />
+        <Card className="p-6 border-red-200 bg-red-50/50 text-red-700">
+          <p className="text-sm font-medium">Failed to load contact submissions</p>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Contact Form Submissions</h1>
-        <p className="text-muted-foreground">
-          Manage and respond to contact form submissions from users
-        </p>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={data?.contacts || []}
-        searchKey="name"
-        searchPlaceholder="Search by name, email, or message..."
-        pagination={{
-          pageIndex: page,
-          pageSize: pageSize,
-          pageCount: data?.pagination?.totalPages || 1,
-          onPageChange: setPage,
-          onPageSizeChange: setPageSize,
-        }}
-        isLoading={isLoading}
+      <PageHeader
+        title="Contact Form Submissions"
+        description="Review, respond to, and resolve user inquiries and support submissions"
       />
 
+      <Card className="p-4 sm:p-6 bg-white border-slate-200 shadow-sm">
+        <DataTable
+          columns={columns}
+          data={data?.contacts || []}
+          searchKey="name"
+          searchPlaceholder="Search by sender name..."
+          pagination={{
+            pageIndex: page,
+            pageSize: pageSize,
+            pageCount: data?.pagination?.totalPages || 1,
+            onPageChange: setPage,
+            onPageSizeChange: setPageSize,
+          }}
+          isLoading={isLoading}
+        />
+      </Card>
+
       <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Contact Message</DialogTitle>
+        <DialogContent className="bg-white border-slate-200 max-w-lg">
+          <DialogHeader className="border-b border-slate-100 pb-3">
+            <DialogTitle className="text-lg font-bold tracking-tight text-slate-900">
+              Message from {selectedContact?.name}
+            </DialogTitle>
+            <p className="text-xs font-mono text-slate-500 tabular-nums">
+              {selectedContact?.email}
+            </p>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <span className="font-semibold">From:</span> {selectedContact?.name} (
-              {selectedContact?.email})
+          <div className="space-y-4 py-2">
+            <div className="p-4 rounded-lg border border-slate-100 bg-slate-50/50 text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
+              {selectedContact?.message}
             </div>
-            <div className="whitespace-pre-wrap">{selectedContact?.message}</div>
+            {selectedContact?.createdAt && (
+              <p className="text-[11px] font-mono text-slate-400 tabular-nums">
+                Submitted on {format(new Date(selectedContact.createdAt), 'PPP p')}
+              </p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white border-slate-200">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the contact submission.
+            <AlertDialogTitle className="text-base font-semibold text-slate-900">
+              Delete Contact Submission?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-slate-500 leading-relaxed">
+              This action cannot be undone. This will permanently remove the submission record from
+              the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
